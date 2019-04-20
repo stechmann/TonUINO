@@ -29,3 +29,4 @@ Temporary Items
 # TonUINO media folders
 /sd-card
 /sd-card_*
+/tools/*.pyc
