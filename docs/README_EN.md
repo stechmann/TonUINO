@@ -50,7 +50,7 @@ TonUINO only functions correctly, when there is the correct (**as in matches the
 
 ### Use audio messages from this repo
 
-You'll find the following folder structure in the repo, which contains the audio messages - created using Amazon Polly - in several different languages. Please pick the language you want and put the folders **advert** und **mp3** on the SD card.
+You'll find the following folder structure in the repo, which contains the audio messages - generated using Amazon Polly - in several different languages. Please pick the language you want and put the folders **advert** und **mp3** on the SD card.
 
 ```
 +- audio-messages-polly
@@ -74,7 +74,7 @@ The script is able utilize three text-to-speech engines:
 
 The amount of messages you need to create, is covered by the free tiers of the respective services - Amazon ([pricing](https://aws.amazon.com/de/polly/pricing/)) or Google ([pricing](https://cloud.google.com/text-to-speech/pricing)). You need to create an account for both and once the free tier is used up, the costs are just a few cents.
 
-#### Required Tools
+#### Required tools
 
 Depending on what option you choose, you need to install a few tools. The next steps require the following:
 
@@ -112,7 +112,7 @@ The python script offers additional options, run the following command to get an
 
 - `python tools/create_audio_messages.py --help`
 
-## Add lead-in messages to MP3-files
+## Add Lead-In Messages To mp3 Files
 
 In story mode there is the problem that when playing a card, one does not know which episode is played. If you play for example *Benjamin the Elephant*, then you'll always hear the title song first, which sounds the same in all episodes.
 
