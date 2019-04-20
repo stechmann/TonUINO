@@ -26,7 +26,6 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-# TonUINO media folders
-/sd-card
-/sd-card_*
+# TonUINO
+/sd-card*
 /tools/*.pyc
