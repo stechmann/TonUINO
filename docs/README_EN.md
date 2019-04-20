@@ -32,13 +32,13 @@ This is my alternative firmware for the wonderful [TonUINO](https://www.voss.ear
 
 The (optional) PIN Code to secure the parental functions is by default
 
-* `play/pause, vol-, vol+, play/pause`
+- `play/pause, vol-, vol+, play/pause`
 
 and can be changed in the sketch before compile time.
 
 ## SD Card Folder Structure
 
-The folders on the SD card, that will hold your media files, need to be named **01 bis 99** - that is **two digits**. The media files in these folders need to start with a **three digit zero padded number** like **001 to 255**, but may [1] contain more characters afterwards. Allowed would be `001.mp3` or `001MyTune.mp3`.
+The folders on the SD card, that will hold your mp3 files, need to be named **01 bis 99** - that is **two digits**. The mp3 files in these folders need to start with a **three digit zero padded number** like **001 to 255**, but may [1] contain more characters afterwards. Allowed would be `001.mp3` or `001MyTune.mp3`.
 
 It has been proven benefitial to prepare the whole folder structure on the computer and then copy everything to the SD card in one go. That way it's made sure the order of the files is correct.
 
@@ -46,83 +46,118 @@ It has been proven benefitial to prepare the whole folder structure on the compu
 
 ## Audio Messages
 
-TonUINO only functions correctly, when there is the correct (**as in matches the firmware**) set of audio messages on the SD card. These are stored in the folders **mp3** and **advert**.
+TonUINO only functions correctly, when there is the correct (**as in matches the firmware**) set of audio messages on the SD card. These are the folders **advert** and **mp3**.
 
-You can create the matching set of audio messages, using the `create_audio_messages.py` python script supplied in this repo. The script can create *english* and *german* audio messages. The description down below describes *english*.
+### Use audio messages from this repo
 
-The script offers the three options to do this:
+You'll find the following folder structure in the repo, which contains the audio messages - created using Amazon Polly - in several different languages. Please pick the language you want and put the folders **advert** und **mp3** on the SD card.
 
-  1. Using the tools `say` (requires macOS) and `ffmpeg`. If you have a Mac this way is pretty simple.
-  2. Using Amazon Polly, the text-to-speech service of Amazon.
-  3. Using Googles text-to-speech service.
+```
++- audio-messages-polly
+   +- de
+   |  +- advert
+   |  +- mp3
+   +- en
+      +- advert
+      +- mp3
+```
 
-For the amount of messages you need using the service of Google resp. Amazon is free. But you have to create an account first. Regarding quality, Amazon Polly sounds best, followed by Google and last `say`.
+### Create the audio messages yourself
 
-The audio message files are not available for download at this point in time.
+If you want to, you can as well create the matching set of audio messages yourself, using the `create_audio_messages.py` python script from this repo. This way then also offers different text-to-speech engines if you like (see below). The script can create **english** and **german** audio messages. It is tested on macOS, but you should be able to run it on Windows / Linux with minimal effort - given you resolve the dependencies.
 
-### How to create audio messages using `say` (option one)
+The script is able utilize three text-to-speech engines:
 
-Besides the tool `say` (part of macOS) you also need `ffmpeg`. The later can quickly be installed via Homebrew.
+- Locally - on macOS only - using the tools `say` and `ffmpeg`. If you have a Mac this method is fast, simple and free of charge. 
+- Over the internet using Amazon Polly, the text-to-speech service of Amazon.
+- Over the internet using Googles Cloud text-to-speech service.
 
-1. Install `ffmpeg` (if not done yet):
-    - Open `Terminal.app` and follow the instructions on the [Homebrew](https://brew.sh) website.
-    - In Terminal run `brew update && brew install ffmpeg`
+The amount of messages you need to create, is covered by the free tiers of the respective services - Amazon ([pricing](https://aws.amazon.com/de/polly/pricing/)) or Google ([pricing](https://cloud.google.com/text-to-speech/pricing)). You need to create an account for both and once the free tier is used up, the costs are just a few cents.
+
+#### Required Tools
+
+Depending on what option you choose, you need to install a few tools. The next steps require the following:
+
+- [Homebrew](https://brew.sh) (macOS only).
+- Python - [Windows / Linux](https://www.python.org/downloads/), macOS: `brew install python`.
+
+#### Create audio messages using `say` and `ffmpeg`
+
+In addition to `say` (part of macOS) you also need `ffmpeg`.
+
+1. Install `ffmpeg`: `brew install ffmpeg`
 2. Change into the folder where you unzipped the `.zip` from GitHub or where you cloned the repo to.
 3. Run `tools/python create_audio_messages.py --use-say --lang=en`.
-4. Copy the contents of the folder **sd-card** to the SD Card.
+4. Copy the contents of the folder **sd-card** to the SD Card. Done.
 
-### How to create audio messages using Amazon Polly (option two)
+#### Create audio messages using Amazon Polly
 
-1. Go to the [AWS website](https://aws.amazon.com/) and create an account.
-2. [Install the tool `aws`](https://docs.aws.amazon.com/en_us/cli/latest/userguide/cli-chap-install.html) (on a Mac by `brew install awscli`) und [configure it](https://docs.aws.amazon.com/en_us/cli/latest/userguide/cli-chap-configure.html).
-3. Change into the folder where you unzipped the `.zip` from GitHub or where you cloned the repo to.
-4. Run `python tools/create_audio_messages.py --use-amazon --lang=en`.
-5. Copy the contents of the folder **sd-card** to the SD Card.
+1. Go to the [AWS](https://aws.amazon.com/) website, create an account and the respective access keys.
+2. [Install](https://docs.aws.amazon.com/en_us/cli/latest/userguide/cli-chap-install.html) (Windows / Linux) the `aws` command line tool. macOS: `brew install awscli`.
+3. [Configure](https://docs.aws.amazon.com/en_us/cli/latest/userguide/cli-chap-configure.html) the the `aws` command line tool.
+4. Change into the folder where you unzipped the `.zip` from GitHub or where you cloned the repo to.
+5. Run `python tools/create_audio_messages.py --use-amazon --lang=en`.
+6. Copy the contents of the folder **sd-card** to the SD Card. Done.
 
-### How to create audio messages using Googles text-to-speech service (option three)
+#### Create audio messages using Googles text-to-speech service
 
-1. Go to [Googles text-to-speech website](https://cloud.google.com/text-to-speech/) and create an account and an API key.
+1. Go to Googles [Cloud text-to-speech](https://cloud.google.com/text-to-speech/) website, create an account and API key.
 2. Change into the folder where you unzipped the `.zip` from GitHub or where you cloned the repo to.
 4. Run `python tools/create_audio_messages.py --use-google-key=ABCD --lang=en`.
-5. Copy the contents of the folder **sd-card** to the SD Card.
+5. Copy the contents of the folder **sd-card** to the SD Card. Done.
 
-## Tool for lead-in messages
+#### Help and additional options
 
-In story mode there is the problem that when playing the card one does not know which episode is played. If you play for example Benjamin Blossom, then you'll always hear the title song first, which sounds the same in all episodes.
+The python script offers additional options, run the following command to get an overview:
 
-The script `add_lead_in_messages.py` adds a lead-in message to the mp3 file, such as "Benjamin Blossom on vacation". If you want to hear another episode, then you can just lay on the Benjamin Blossom card again.
+- `python tools/create_audio_messages.py --help`
 
-**Functionality:**
+## Add lead-in messages to MP3-files
+
+In story mode there is the problem that when playing a card, one does not know which episode is played. If you play for example *Benjamin the Elephant*, then you'll always hear the title song first, which sounds the same in all episodes.
+
+The script `add_lead_in_messages.py` adds a lead-in message to the mp3 file, such as *Benjamin the Elephant on vacation*. If you want to hear a different episode, then you can just show the *Benjamin the Elephant* card again. It is tested on macOS, but you should be able to run it on Windows / Linux with minimal effort - given you resolve the dependencies.
+
+### How it works
 
 Suppose you have a folder with the following content:
 
 ```
-+- 04_Benjamin Blossom/
-   +- Benjamin Blossom has his birthday.mp3
-   +- Benjamin Blossom on vacation.mp3
-   +- Benjamin Blossom as a pilot.mp3
++- 04_Benjamin the Elephant/
+   +- Benjamin the Elephant has his birthday.mp3
+   +- Benjamin the Elephant on vacation.mp3
+   +- Benjamin the Elephant as a pilot.mp3
 ```
 
-Then you can use the following call to generate mp3 files with lead-in messages (example):
+Then you can use the following command to generate mp3 files with lead-in messages (example):
 
-    python tools/add_lead_in_messages.py -i '04_Benjamin Blossom' -o /Volumes/TonUINO/04 --google-key=ABCD --add-numbering
+    python tools/add_lead_in_messages.py -i '04_Benjamin the Elephant' -o /Volumes/TonUINO/04 --google-key=ABCD --add-numbering
 
-What happens:
+What happened:
 
-  - New mp3 files are generated including the lead-in messages. You can also write directly to the SD card (as in the example).
-  - The original files are not changed.
-  - The mp3 data is not re-encoded (so no quality loss).
-  - Optionally, the mp3 files are numbered compatible with DFPlayer Mini. For example `001_Benjamin Blossom has his birthday.mp3` (parameter` --add-numbering`)
-  - The script generates the lead-in messages either with Google Text-to-speech (if the parameter `--google-key` was specified) or with the Mac tool `say`.
+- New mp3 files are generated including the lead-in messages. You can also write directly to the SD card (as in the example).
+- The original mp3 files are not touched.
+- The mp3 files are not re-encoded (so no quality loss).
+- Optionally, the mp3 files are numbered to be compatible with DFPlayer Mini. For example `001_Benjamin the Elephant has his birthday.mp3` (parameter `--add-numbering`)
+- The script is able utilize three text-to-speech engines:
+  - Locally - on macOS only - using the tools `say` and `ffmpeg`. (parameter `--use-say`)
+  - Over the internet using Amazon Polly, the text-to-speech service of Amazon. (parameter `--use-amazon`)
+  - Over the internet using Googles Cloud text-to-speech service. (parameter `--google-key=ABCD`)
 
 The result looks like this:
 
 ```
 +- /Volumes/TonUINO/04/
-   +- 001_Benjamin Blossom has his birthday.mp3
-   +- 002_Benjamin Blossom on vacation.mp3
-   +- 003_Benjamin Blossom as a pilot.mp3
+   +- 001_Benjamin the Elephant has his birthday.mp3
+   +- 002_Benjamin the Elephant on vacation.mp3
+   +- 003_Benjamin the Elephant as a pilot.mp3
 ```
+
+### Help and additional options
+
+The python script offers additional options, run the following command to get an overview:
+
+- `python tools/add_lead_in_messages.py --help`
 
 ## License
 

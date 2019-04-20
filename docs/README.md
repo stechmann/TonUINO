@@ -40,7 +40,7 @@ und kann im Sketch vor dem kompilieren geändert werden.
 
 ## Ordnerstruktur auf der SD Karte
 
-Die Ordner auf der SD Karte, in denen eure Audio Dateien abgelegt werden, müssen **01 bis 99** heißen - also **zweistellig** sein. Die Dateien in den Ordnern müssen mit einer **dreistelligen** Nummer beginnen - **001 bis 255** - können aber in der Regel [1] weitere Zeichen enthalten. Erlaubt wäre demnach `001.mp3` oder auch `001Lieblingslied.mp3`.
+Die Ordner auf der SD Karte, in denen eure MP3-Dateien abgelegt werden, müssen **01 bis 99** heissen - also **zweistellig** sein. Die Dateien in den Ordnern müssen mit einer **dreistelligen** Nummer beginnen - **001 bis 255** - können aber in der Regel [1] weitere Zeichen enthalten. Erlaubt wäre demnach `001.mp3` oder auch `001Lieblingslied.mp3`.
 
 Es hat sich bewährt, die gesammte Ordnerstruktur auf dem Comupter vorzubereiten und dann in einem Rutsch auf die SD Karte zu kopieren. So wird sichergestellt, daß alle Dateien auch in der richtigen Reihenfolge sind.
 
@@ -48,53 +48,80 @@ Es hat sich bewährt, die gesammte Ordnerstruktur auf dem Comupter vorzubereiten
 
 ## Audio Meldungen
 
-TonUINO funktioniert nur korrekt, wenn ein **zur Firmware passendes** Set an Audio Meldungen auf der SD Karte vorhanden ist (die Ordner **mp3** und **advert**).
+TonUINO funktioniert nur korrekt, wenn ein **zur Firmware passendes** Set an Audio Meldungen auf der SD Karte vorhanden ist. Dies sind die Ordner **advert** und **mp3**.
 
-Das passende Set an Audio Meldungen lässt sich mit dem beigelegten Python Script `create_audio_messages.py` erzeugen. Das Script kann sowohl *deutsche* als auch *englische* Audio Meldungen erzeugen. Die Beschreibung weiter unten beschreibt *deutsch*.
+### Mitgelieferte Audio Meldungen verwenden
 
-Das Skript bietet dabei drei Möglichkeiten:
+Im Repo befindet sich die folgende Ordnerstruktur, in der die - mit Amazon Polly erzeugten - Audio Meldungen in mehreren Sprachen vorliegen. Bitte wählt die für euch passende Sprache aus und kopiert die Ordner **advert** und **mp3** auf die SD Karte:
 
-  1. Mit den Tools `say` (benötigt macOS) und `ffmpeg`. Sofern man einen Mac hat ist dieser Weg schnell und einfach.
-  2. Mit Amazon Polly, dem text-to-speech Service von Amazon.
-  3. Mit Hilfe des text-to-speech Service von Google.
+```
++- audio-messages-polly
+   +- de
+   |  +- advert
+   |  +- mp3
+   +- en
+      +- advert
+      +- mp3
+```
 
-Für die Anzahl der benötigten Meldungen ist die Nutzung des Service von Google bzw. Amazon kostenlos. Allerdings muss man erst einen Account anlegen. Qualitativ ist Amazon Polly am besten, gefolgt von Google und zuletzt `say`.
+### Audio Meldungen selber erzeugen
 
-Zum Download kann ich die Dateien derzeit leider nicht anbieten!
+Das passende Set an Audio Meldungen lässt sich auch jederzeit alternativ mit dem beigelegten Python Script `create_audio_messages.py` erzeugen. Hier sind dann auch weitere text-to-speech Engines möglich wenn ihr möchtet (siehe unten). Das Script kann sowohl **deutsche** als auch **englische** Audio Meldungen erzeugen. Es ist unter macOS getested, sollte aber mit minimalem Aufwand auch unter Windows / Linux laufen - wenn alle Abhängigkeiten erfüllt werden.
 
-### Audio Meldungen mit `say` erzeugen (Möglichkeit eins)
+Das Skript unerstützt dabei die Nutzung von drei text-to-speech Engines:
 
-Neben dem Tool `say` (ist Teil von macOS) wird hier noch `ffmpeg` benötigt. Letzteres lässt sich z.B. ganz einfach über Homebrew installieren.
+- Lokal - nur unter macOS - mit den Tools `say` und `ffmpeg`. Sofern man einen Mac hat ist dieser Weg schnell, einfach und dauerhaft kostenlos.
+- Über das Internet mit Amazon Polly, dem text-to-speech Service von Amazon.
+- Über das Internet mit Hilfe des Cloud text-to-speech Service von Google.
 
-1. `ffmpeg` installieren (falls noch nicht geschehen):
-    - `Terminal.app` öffnen und den Anweisungen auf der [Homebrew](https://brew.sh) Webseite folgen.
-    - Im Terminal `brew update && brew install ffmpeg` ausführen.
+Für die Anzahl der benötigten Meldungen ist die Nutzung der Services von Amazon ([Preise](https://aws.amazon.com/de/polly/pricing/)) bzw. Google ([Preise](https://cloud.google.com/text-to-speech/pricing)) erstmal kostenlos. Für beide Services muss man allerdings erst einen Account anlegen, ist dann das Freikontingent irgendwann einmal aufgebraucht fallen Kosten im Bereich von ein paar Cent an.
+
+#### Benötigte Tools
+
+Je nachdem für welche Option ihr euch entscheidet, werden verschiedene Tools benötigt. Die weiteren Schritte gehen davon aus, daß folgendes installiert ist:
+
+- [Homebrew](https://brew.sh) (nur macOS).
+- Python - [Windows / Linux](https://www.python.org/downloads/), macOS: `brew install python`.
+
+
+#### Audio Meldungen mit `say` und `ffmpeg` erzeugen
+
+Neben dem Tool `say` (ist Teil von macOS) wird hier noch `ffmpeg` benötigt.
+
+1. `ffmpeg` installieren: `brew install ffmpeg`
 2. In den Ordner wechseln wo ihr die `.zip` Datei von GitHub entpackt, bzw. das Repository gecloned habt.
 3. `python tools/create_audio_messages.py --use-say` ausführen.
-4. Kopiert den Inhalt des Ordners **sd-card** auf die SD Karte.
+4. Kopiert nun den Inhalt des Ordners **sd-card** auf die SD Karte. Fertig.
 
-### Audio Meldungen mit Amazon Polly erzeugen (Möglichkeit zwei)
+#### Audio Meldungen mit Amazon Polly erzeugen
 
-1. Auf der [AWS-Seite Seite](https://aws.amazon.com/) einen Account anlegen.
-2. Das [Tool `aws` installieren](https://docs.aws.amazon.com/de_de/cli/latest/userguide/cli-chap-install.html) (auf dem Mac per `brew install awscli`) und [konfigurieren](https://docs.aws.amazon.com/de_de/cli/latest/userguide/cli-chap-configure.html).
-3. In den Ordner wechseln wo ihr die `.zip` Datei von GitHub entpackt, bzw. das Repository gecloned habt.
-4. `python tools/create_audio_messages.py --use-amazon` ausführen.
-5. Kopiert den Inhalt des Ordners **sd-card** auf die SD Karte.
+1. Auf der [AWS](https://aws.amazon.com/) Webseite einen Account anlegen und Access Keys erzeugen.
+2. Das Tool `aws` [installieren](https://docs.aws.amazon.com/de_de/cli/latest/userguide/cli-chap-install.html) (Windows / Linux), macOS: `brew install awscli`.
+3. Das Tool `aws` [konfigurieren](https://docs.aws.amazon.com/de_de/cli/latest/userguide/cli-chap-configure.html).
+4. In den Ordner wechseln wo ihr die `.zip` Datei von GitHub entpackt, bzw. das Repository gecloned habt.
+5. `python tools/create_audio_messages.py --use-amazon` ausführen.
+6. Kopiert nun den Inhalt des Ordners **sd-card** auf die SD Karte. Fertig.
 
-### Audio Meldungen mit dem text-to-speech Service von Google erzeugen (Möglichkeit drei)
+#### Audio Meldungen mit dem Cloud text-to-speech Service von Google erzeugen
 
-1. Auf [Googles text-to-speech Seite](https://cloud.google.com/text-to-speech/) einen Account anlegen und einen API-Key erzeugen.
+1. Auf Googles [Cloud text-to-speech](https://cloud.google.com/text-to-speech/) Webseite einen Account anlegen und einen API-Key erzeugen.
 2. In den Ordner wechseln wo ihr die `.zip` Datei von GitHub entpackt, bzw. das Repository gecloned habt.
 3. `python tools/create_audio_messages.py --use-google-key=ABCD` ausführen.
-4. Kopiert den Inhalt des Ordners **sd-card** auf die SD Karte.
+4. Kopiert nun den Inhalt des Ordners **sd-card** auf die SD Karte. Fertig.
 
-## Tool für Ansagen
+#### Hilfe & weitere Optionen
 
-Im Hörspielmodus gibt es das Problem, dass man beim Auflegen der Karte nicht weiß, welche Folge abgespielt wird. Spielt man z.B. Benjamin Blümchen ab, dann kommt immer zuerst der Titelsong, der sich bei allen Folgen gleich anhört.
+Das Python Script hat noch einige weitere Funktionen. Ein Übersicht gibt:
 
-Das Skript `add_lead_in_messages.py` fügt der mp3-Datei eine Ansage wie z.B. "Benjamin Blümchen im Urlaub" hinzu. Wenn man eine andere Folge hören will, kann man dann einfach nochmal die Benjamin-Blümchen-Karte auflegen.
+- `python tools/create_audio_messages.py --help`
 
-**Funktionsweise:**
+## Titelansagen in MP3-Dateien einfügen
+
+Im Hörspielmodus gibt es das Problem, daß man beim Auflegen der Karte nicht weiß, welche Folge abgespielt wird. Spielt man z.B. *Benjamin Blümchen* ab, dann kommt immer zuerst der Titelsong, der sich bei allen Folgen gleich anhört.
+
+Das Skript `add_lead_in_messages.py` fügt der MP3-Datei eine Titelansage wie z.B. *Benjamin Blümchen im Urlaub* hinzu. Wenn man eine andere Folge hören möchte, kann man dann einfach nochmal die *Benjamin Blümchen* Karte auflegen. Es ist unter macOS getested, sollte aber mit minimalem Aufwand auch unter Windows / Linux laufen - wenn alle Abhängigkeiten erfüllt werden.
+
+### Funktionsweise
 
 Angenommen man hat einen Ordner mit folgendem Inhalt:
 
@@ -105,16 +132,20 @@ Angenommen man hat einen Ordner mit folgendem Inhalt:
    +- Benjamin Blümchen als Pilot.mp3
 ```
 
-Dann kann man mit folgendem Aufruf mp3-Dateien mit Ansagen generieren (Beispiel):
+Dann kann man mit folgendem Aufruf MP3-Dateien mit Ansagen generieren (Beispiel):
 
     python tools/add_lead_in_messages.py -i '04_Benjamin Blümchen' -o /Volumes/TonUINO/04 --google-key=ABCD --add-numbering
 
 Was dann passiert:
-  - Es werden neue mp3-Dateien mit den Ansagen erzeugt. Man kann dabei auch direkt auf die SD-Karte schreiben (wie im Beispiel).
-  - Die Original-Dateien werden dabei nicht geändert.
-  - Die mp3-Daten werden nicht neu kodiert (also kein Qualitätsverlust).
-  - Auf Wunsch werden die mp3-Dateien kompatibel zu DFPlayer Mini numeriert. Also z.B. `001_Benjamin Blümchen hat Geburtstag.mp3` (Parameter `--add-numbering`)
-  - Das Skript erzeugt die Ansagen entweder mit Google Text-to-speech (wenn der Parameter `--google-key` angegeben wurde) oder mit dem Mac-Tool `say`.
+
+- Es werden neue MP3-Dateien mit den Ansagen erzeugt. Man kann dabei auch optional direkt auf die SD-Karte schreiben (wie im Beispiel).
+- Die Original-Dateien werden dabei nicht geändert.
+- Die MP3-Dateien werden nicht neu enkodiert (also kein Qualitätsverlust).
+- Auf Wunsch werden die MP3-Dateien kompatibel zum DFPlayer Mini numeriert. Also z.B. `001_Benjamin Blümchen hat Geburtstag.mp3` (Parameter `--add-numbering`)
+- Das Skript unerstützt dabei die Nutzung von drei text-to-speech Engines:
+  - Lokal - nur unter macOS - mit den Tools `say` und `ffmpeg`. (Parameter `--use-say`)
+  - Über das Internet mit Amazon Polly, dem text-to-speech Service von Amazon. (Parameter `--use-amazon`)
+  - Über das Internet mit Hilfe des Cloud text-to-speech Service von Google. (Parameter `--google-key=ABCD`)
 
 Das Ergebnis sieht dann so aus:
 
