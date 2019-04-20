@@ -60,7 +60,7 @@ def textToSpeech(text, targetFile, lang='de', useAmazon=False, useGoogleKey=None
     if useAmazon:
         response = subprocess.check_output(['aws', 'polly', 'synthesize-speech', '--output-format', 'mp3',
             '--voice-id', amazonVoiceByLang[lang], '--text-type', 'ssml',
-            '--text', '<speak><amazon:effect name="drc"><amazon:effect vocal-tract-length="-10%"><prosody rate=\"1.1\">' + text + '</prosody></amazon:effect></amazon:effect></speak>',
+            '--text', '<speak><amazon:effect name="drc"><prosody rate=\"+10%\">' + text + '</prosody></amazon:effect></speak>',
             targetFile])
     elif useGoogleKey:
         responseJson = postJson(
