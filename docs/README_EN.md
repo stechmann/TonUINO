@@ -53,13 +53,13 @@ TonUINO only functions correctly, when there is the correct (**as in matches the
 You'll find the following folder structure in the repo, which contains the audio messages - created using Amazon Polly - in several different languages. Please pick the language you want and put the folders **advert** und **mp3** on the SD card.
 
 ```
-+- audio-messages-polly
-   +- de
-   |  +- advert
-   |  +- mp3
-   +- en
-      +- advert
-      +- mp3
++- audio-messages-polly/
+   +- de/
+   |  +- advert/
+   |  +- mp3/
+   +- en/
+      +- advert/
+      +- mp3/
 ```
 
 ### Create the audio messages yourself
@@ -116,7 +116,7 @@ The python script offers additional options, run the following command to get an
 
 In story mode there is the problem that when playing a card, one does not know which episode is played. If you play for example *Benjamin the Elephant*, then you'll always hear the title song first, which sounds the same in all episodes.
 
-The script `add_lead_in_messages.py` adds a lead-in message to the mp3 file, such as *Benjamin the Elephant on vacation*. If you want to hear a different episode, then you can just show the *Benjamin the Elephant* card again. It is tested on macOS, but you should be able to run it on Windows / Linux with minimal effort - given you resolve the dependencies.
+The python script `add_lead_in_messages.py` adds a lead-in message to the mp3 file, such as *Benjamin the Elephant on vacation*. If you want to hear a different episode, then you can just show the *Benjamin the Elephant* card again. It is tested on macOS, but you should be able to run it on Windows / Linux with minimal effort - given you resolve the dependencies.
 
 ### How it works
 

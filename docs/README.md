@@ -55,18 +55,18 @@ TonUINO funktioniert nur korrekt, wenn ein **zur Firmware passendes** Set an Aud
 Im Repo befindet sich die folgende Ordnerstruktur, in der die - mit Amazon Polly erzeugten - Audio Meldungen in mehreren Sprachen vorliegen. Bitte wählt die für euch passende Sprache aus und kopiert die Ordner **advert** und **mp3** auf die SD Karte:
 
 ```
-+- audio-messages-polly
-   +- de
-   |  +- advert
-   |  +- mp3
-   +- en
-      +- advert
-      +- mp3
++- audio-messages-polly/
+   +- de/
+   |  +- advert/
+   |  +- mp3/
+   +- en/
+      +- advert/
+      +- mp3/
 ```
 
 ### Audio Meldungen selber erzeugen
 
-Das passende Set an Audio Meldungen lässt sich auch jederzeit alternativ mit dem beigelegten Python Script `create_audio_messages.py` erzeugen. Hier sind dann auch weitere text-to-speech Engines möglich wenn ihr möchtet (siehe unten). Das Script kann sowohl **deutsche** als auch **englische** Audio Meldungen erzeugen. Es ist unter macOS getested, sollte aber mit minimalem Aufwand auch unter Windows / Linux laufen - wenn alle Abhängigkeiten erfüllt werden.
+Das passende Set an Audio Meldungen lässt sich auch jederzeit mit dem beigelegten Python Skript `create_audio_messages.py` erzeugen. Hier sind dann auch weitere text-to-speech Engines möglich wenn ihr möchtet (siehe unten). Das Skript kann sowohl **deutsche** als auch **englische** Audio Meldungen erzeugen. Es ist unter macOS getested, sollte aber mit minimalem Aufwand auch unter Windows / Linux laufen - wenn alle Abhängigkeiten erfüllt werden.
 
 Das Skript unerstützt dabei die Nutzung von drei text-to-speech Engines:
 
@@ -109,9 +109,9 @@ Neben dem Tool `say` (ist Teil von macOS) wird hier noch `ffmpeg` benötigt.
 3. `python tools/create_audio_messages.py --use-google-key=ABCD` ausführen.
 4. Kopiert nun den Inhalt des Ordners **sd-card** auf die SD Karte. Fertig.
 
-#### Hilfe & weitere Optionen
+#### Hilfe und weitere Optionen
 
-Das Python Script hat noch einige weitere Funktionen. Ein Übersicht gibt:
+Das Python Skript hat noch einige weitere Funktionen. Eine Übersicht gibt:
 
 - `python tools/create_audio_messages.py --help`
 
@@ -119,7 +119,7 @@ Das Python Script hat noch einige weitere Funktionen. Ein Übersicht gibt:
 
 Im Hörspielmodus gibt es das Problem, daß man beim Auflegen der Karte nicht weiß, welche Folge abgespielt wird. Spielt man z.B. *Benjamin Blümchen* ab, dann kommt immer zuerst der Titelsong, der sich bei allen Folgen gleich anhört.
 
-Das Skript `add_lead_in_messages.py` fügt der MP3-Datei eine Titelansage wie z.B. *Benjamin Blümchen im Urlaub* hinzu. Wenn man eine andere Folge hören möchte, kann man dann einfach nochmal die *Benjamin Blümchen* Karte auflegen. Es ist unter macOS getested, sollte aber mit minimalem Aufwand auch unter Windows / Linux laufen - wenn alle Abhängigkeiten erfüllt werden.
+Das Python Skript `add_lead_in_messages.py` fügt der MP3-Datei eine Titelansage wie z.B. *Benjamin Blümchen im Urlaub* hinzu. Wenn man eine andere Folge hören möchte, kann man dann einfach nochmal die *Benjamin Blümchen* Karte auflegen. Es ist unter macOS getested, sollte aber mit minimalem Aufwand auch unter Windows / Linux laufen - wenn alle Abhängigkeiten erfüllt werden.
 
 ### Funktionsweise
 
@@ -155,6 +155,12 @@ Das Ergebnis sieht dann so aus:
    +- 002_Benjamin Blümchen im Urlaub.mp3
    +- 003_Benjamin Blümchen als Pilot.mp3
 ```
+
+#### Hilfe und weitere Optionen
+
+Das Python Skript hat noch einige weitere Funktionen. Eine Übersicht gibt:
+
+- `python tools/add_lead_in_messages.py --help`
 
 ## Lizenz
 
