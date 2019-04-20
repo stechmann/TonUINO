@@ -53,13 +53,13 @@ TonUINO only functions correctly, when there is the correct (**as in matches the
 You'll find the following folder structure in the repo, which contains the audio messages - created using Amazon Polly - in several different languages. Please pick the language you want and put the folders **advert** und **mp3** on the SD card.
 
 ```
-+- audio-messages-polly/
-   +- de/
-   |  +- advert/
-   |  +- mp3/
-   +- en/
-      +- advert/
-      +- mp3/
++- audio-messages-polly
+   +- de
+   |  +- advert
+   |  +- mp3
+   +- en
+      +- advert
+      +- mp3
 ```
 
 ### Create the audio messages yourself
@@ -123,7 +123,7 @@ The python script `add_lead_in_messages.py` adds a lead-in message to the mp3 fi
 Suppose you have a folder with the following content:
 
 ```
-+- 04_Benjamin the Elephant/
++- 04_Benjamin the Elephant
    +- Benjamin the Elephant has his birthday.mp3
    +- Benjamin the Elephant on vacation.mp3
    +- Benjamin the Elephant as a pilot.mp3
@@ -147,7 +147,7 @@ What happened:
 The result looks like this:
 
 ```
-+- /Volumes/TonUINO/04/
++- /Volumes/TonUINO/04
    +- 001_Benjamin the Elephant has his birthday.mp3
    +- 002_Benjamin the Elephant on vacation.mp3
    +- 003_Benjamin the Elephant as a pilot.mp3

@@ -55,13 +55,13 @@ TonUINO funktioniert nur korrekt, wenn ein **zur Firmware passendes** Set an Aud
 Im Repo befindet sich die folgende Ordnerstruktur, in der die - mit Amazon Polly erzeugten - Audio Meldungen in mehreren Sprachen vorliegen. Bitte wählt die für euch passende Sprache aus und kopiert die Ordner **advert** und **mp3** auf die SD Karte:
 
 ```
-+- audio-messages-polly/
-   +- de/
-   |  +- advert/
-   |  +- mp3/
-   +- en/
-      +- advert/
-      +- mp3/
++- audio-messages-polly
+   +- de
+   |  +- advert
+   |  +- mp3
+   +- en
+      +- advert
+      +- mp3
 ```
 
 ### Audio Meldungen selber erzeugen
@@ -126,7 +126,7 @@ Das Python Skript `add_lead_in_messages.py` fügt der MP3-Datei eine Titelansage
 Angenommen man hat einen Ordner mit folgendem Inhalt:
 
 ```
-+- 04_Benjamin Blümchen/
++- 04_Benjamin Blümchen
    +- Benjamin Blümchen hat Geburtstag.mp3
    +- Benjamin Blümchen im Urlaub.mp3
    +- Benjamin Blümchen als Pilot.mp3
@@ -150,7 +150,7 @@ Was dann passiert:
 Das Ergebnis sieht dann so aus:
 
 ```
-+- /Volumes/TonUINO/04/
++- /Volumes/TonUINO/04
    +- 001_Benjamin Blümchen hat Geburtstag.mp3
    +- 002_Benjamin Blümchen im Urlaub.mp3
    +- 003_Benjamin Blümchen als Pilot.mp3
