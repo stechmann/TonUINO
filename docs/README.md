@@ -64,9 +64,9 @@ Im Repo befindet sich die folgende Ordnerstruktur, in der die - mit Amazon Polly
       +- mp3
 ```
 
-### Audio Meldungen selber erzeugen
+### Audio Meldungen selbst erzeugen
 
-Das passende Set an Audio Meldungen lässt sich auch jederzeit mit dem beigelegten Python Skript `create_audio_messages.py` erzeugen. Hier sind dann auch weitere text-to-speech Engines möglich wenn ihr möchtet (siehe unten). Das Skript kann sowohl **deutsche** als auch **englische** Audio Meldungen erzeugen. Es ist unter macOS getested, sollte aber mit minimalem Aufwand auch unter Windows / Linux laufen - wenn alle Abhängigkeiten erfüllt werden.
+Das passende Set an Audio Meldungen lässt sich auch jederzeit mit dem beigelegten Python Skript `create_audio_messages.py` erzeugen. Hier sind dann auch weitere text-to-speech Engines möglich wenn ihr möchtet (siehe unten). Das Skript kann sowohl **deutsche** als auch **englische** Audio Meldungen erzeugen. Es ist unter macOS getested, sollte aber mit minimalem Aufwand auch unter Windows / Linux laufen - wenn alle Abhängigkeiten (wie z.B. [Python](https://www.python.org/downloads/)) erfüllt werden.
 
 Das Skript unerstützt dabei die Nutzung von drei text-to-speech Engines:
 
@@ -76,19 +76,11 @@ Das Skript unerstützt dabei die Nutzung von drei text-to-speech Engines:
 
 Für die Anzahl der benötigten Meldungen ist die Nutzung der Services von Amazon ([Preise](https://aws.amazon.com/de/polly/pricing/)) bzw. Google ([Preise](https://cloud.google.com/text-to-speech/pricing)) erstmal kostenlos. Für beide Services muss man allerdings erst einen Account anlegen, ist dann das Freikontingent irgendwann einmal aufgebraucht fallen Kosten im Bereich von ein paar Cent an.
 
-#### Benötigte Tools
-
-Je nachdem für welche Option ihr euch entscheidet, werden verschiedene Tools benötigt. Die weiteren Schritte gehen davon aus, daß folgendes installiert ist:
-
-- [Homebrew](https://brew.sh) (nur macOS).
-- Python - [Windows / Linux](https://www.python.org/downloads/), macOS: `brew install python`.
-
-
 #### Audio Meldungen mit `say` und `ffmpeg` erzeugen
 
 Neben dem Tool `say` (ist Teil von macOS) wird hier noch `ffmpeg` benötigt.
 
-1. `ffmpeg` installieren: `brew install ffmpeg`
+1. `ffmpeg` installieren, z.B. via [Homebrew](https://brew.sh): `brew install ffmpeg`
 2. In den Ordner wechseln wo ihr die `.zip` Datei von GitHub entpackt, bzw. das Repository gecloned habt.
 3. `python tools/create_audio_messages.py --use-say` ausführen.
 4. Kopiert nun den Inhalt des Ordners **sd-card** auf die SD Karte. Fertig.
@@ -96,7 +88,7 @@ Neben dem Tool `say` (ist Teil von macOS) wird hier noch `ffmpeg` benötigt.
 #### Audio Meldungen mit Amazon Polly erzeugen
 
 1. Auf der [AWS](https://aws.amazon.com/) Webseite einen Account anlegen und Access Keys erzeugen.
-2. Das Tool `aws` [installieren](https://docs.aws.amazon.com/de_de/cli/latest/userguide/cli-chap-install.html) (Windows / Linux), macOS: `brew install awscli`.
+2. Das Tool `aws` [installieren](https://docs.aws.amazon.com/de_de/cli/latest/userguide/cli-chap-install.html) (Windows / Linux), macOS z.B. via [Homebrew](https://brew.sh): `brew install awscli`.
 3. Das Tool `aws` [konfigurieren](https://docs.aws.amazon.com/de_de/cli/latest/userguide/cli-chap-configure.html).
 4. In den Ordner wechseln wo ihr die `.zip` Datei von GitHub entpackt, bzw. das Repository gecloned habt.
 5. `python tools/create_audio_messages.py --use-amazon` ausführen.

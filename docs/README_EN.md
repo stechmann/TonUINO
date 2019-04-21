@@ -64,7 +64,7 @@ You'll find the following folder structure in the repo, which contains the audio
 
 ### Create the audio messages yourself
 
-If you want to, you can as well create the matching set of audio messages yourself, using the `create_audio_messages.py` python script from this repo. This way then also offers different text-to-speech engines if you like (see below). The script can create **english** and **german** audio messages. It is tested on macOS, but you should be able to run it on Windows / Linux with minimal effort - given you resolve the dependencies.
+If you want to, you can as well create the matching set of audio messages yourself, using the `create_audio_messages.py` python script from this repo. This way then also offers different text-to-speech engines if you like (see below). The script can create **english** and **german** audio messages. It is tested on macOS, but you should be able to run it on Windows / Linux with minimal effort - given you resolve the dependencies (like [Python](https://www.python.org/downloads/)).
 
 The script is able utilize three text-to-speech engines:
 
@@ -74,18 +74,11 @@ The script is able utilize three text-to-speech engines:
 
 The amount of messages you need to create, is covered by the free tiers of the respective services - Amazon ([pricing](https://aws.amazon.com/de/polly/pricing/)) or Google ([pricing](https://cloud.google.com/text-to-speech/pricing)). You need to create an account for both and once the free tier is used up, the costs are just a few cents.
 
-#### Required tools
-
-Depending on what option you choose, you need to install a few tools. The next steps require the following:
-
-- [Homebrew](https://brew.sh) (macOS only).
-- Python - [Windows / Linux](https://www.python.org/downloads/), macOS: `brew install python`.
-
 #### Create audio messages using `say` and `ffmpeg`
 
 In addition to `say` (part of macOS) you also need `ffmpeg`.
 
-1. Install `ffmpeg`: `brew install ffmpeg`
+1. Install `ffmpeg`, i.e. via [Homebrew](https://brew.sh): `brew install ffmpeg`
 2. Change into the folder where you unzipped the `.zip` from GitHub or where you cloned the repo to.
 3. Run `tools/python create_audio_messages.py --use-say --lang=en`.
 4. Copy the contents of the folder **sd-card** to the SD Card. Done.
@@ -93,7 +86,7 @@ In addition to `say` (part of macOS) you also need `ffmpeg`.
 #### Create audio messages using Amazon Polly
 
 1. Go to the [AWS](https://aws.amazon.com/) website, create an account and the respective access keys.
-2. [Install](https://docs.aws.amazon.com/en_us/cli/latest/userguide/cli-chap-install.html) (Windows / Linux) the `aws` command line tool. macOS: `brew install awscli`.
+2. [Install](https://docs.aws.amazon.com/en_us/cli/latest/userguide/cli-chap-install.html) (Windows / Linux) the `aws` command line tool. On macOS i.e. via [Homebrew](https://brew.sh): `brew install awscli`.
 3. [Configure](https://docs.aws.amazon.com/en_us/cli/latest/userguide/cli-chap-configure.html) the the `aws` command line tool.
 4. Change into the folder where you unzipped the `.zip` from GitHub or where you cloned the repo to.
 5. Run `python tools/create_audio_messages.py --use-amazon --lang=en`.
