@@ -417,6 +417,18 @@ class Mp3Notify {
       Serial.print(F("sd out "));
       Serial.println(returnValue);
     }
+    static void OnUsbOnline(uint16_t returnValue) {
+      Serial.print(F("usb online "));
+      Serial.println(returnValue);
+    }
+    static void OnUsbInserted(uint16_t returnValue) {
+      Serial.print(F("usb in "));
+      Serial.println(returnValue);
+    }
+    static void OnUsbRemoved(uint16_t returnValue) {
+      Serial.print(F("usb out "));
+      Serial.println(returnValue);
+    }
 };
 
 SoftwareSerial mp3Serial(mp3SerialRxPin, mp3SerialTxPin);                     // create SoftwareSerial instance
