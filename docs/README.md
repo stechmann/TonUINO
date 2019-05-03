@@ -50,19 +50,14 @@ Es hat sich bewährt, die gesammte Ordnerstruktur auf dem Comupter vorzubereiten
 
 TonUINO funktioniert nur korrekt, wenn ein **zur Firmware passendes** Set an Audio Meldungen auf der SD Karte vorhanden ist. Dies sind die Ordner **advert** und **mp3**.
 
-### Mitgelieferte Audio Meldungen verwenden
+### Audio Meldungen herunterladen
 
-Im Repo befindet sich die folgende Ordnerstruktur, in der die - mit Amazon Polly erzeugten - Audio Meldungen in mehreren Sprachen vorliegen. Bitte wählt die für euch passende Sprache aus und kopiert die Ordner **advert** und **mp3** auf die SD Karte:
+Du kannst die - mit Amazon Polly generierten - Audio Meldungen in verschiedenen Sprachen herunterladen:
 
-```
-+- audio-messages-polly
-   +- de
-   |  +- advert
-   |  +- mp3
-   +- en
-      +- advert
-      +- mp3
-```
+- Deutsch: [audio-messages-polly-de.zip](https://seisfeld.github.io/tonuino/audio-messages-polly-de.zip)
+- Englisch: [audio-messages-polly-en.zip](https://seisfeld.github.io/tonuino/audio-messages-polly-en.zip)
+
+Die `.zip` Datei entpacken und die Ordner **advert** und **mp3** auf die SD Karte kopieren. Fertig.
 
 ### Audio Meldungen selbst erzeugen
 

@@ -48,19 +48,14 @@ It has been proven benefitial to prepare the whole folder structure on the compu
 
 TonUINO only functions correctly, when there is the correct (**as in matches the firmware**) set of audio messages on the SD card. These are the folders **advert** and **mp3**.
 
-### Use audio messages from this repo
+### Download the audio messages
 
-You'll find the following folder structure in the repo, which contains the audio messages - generated using Amazon Polly - in several different languages. Please pick the language you want and put the folders **advert** und **mp3** on the SD card.
+You can download the audio messages, generated with Amazon Polly, in several different languages:
 
-```
-+- audio-messages-polly
-   +- de
-   |  +- advert
-   |  +- mp3
-   +- en
-      +- advert
-      +- mp3
-```
+- German: [audio-messages-polly-de.zip](https://seisfeld.github.io/tonuino/audio-messages-polly-de.zip)
+- English: [audio-messages-polly-en.zip](https://seisfeld.github.io/tonuino/audio-messages-polly-en.zip)
+
+Extract the `.zip` file and copy the folders **advert** and **mp3** to the SD Card. Done.
 
 ### Create the audio messages yourself
 
