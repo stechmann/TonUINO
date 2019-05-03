@@ -52,7 +52,7 @@ TonUINO funktioniert nur korrekt, wenn ein **zur Firmware passendes** Set an Aud
 
 ### Audio Meldungen herunterladen
 
-Du kannst die - mit Amazon Polly generierten - Audio Meldungen in verschiedenen Sprachen herunterladen:
+Die Audio Meldungen sind mit Amazon Polly generiert worden und können in verschiedenen Sprachen heruntergeladen werden:
 
 - Deutsch: [audio-messages-polly-de.zip](https://seisfeld.github.io/tonuino/audio-messages-polly-de.zip)
 - Englisch: [audio-messages-polly-en.zip](https://seisfeld.github.io/tonuino/audio-messages-polly-en.zip)

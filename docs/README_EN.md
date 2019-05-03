@@ -50,7 +50,7 @@ TonUINO only functions correctly, when there is the correct (**as in matches the
 
 ### Download the audio messages
 
-You can download the audio messages, generated with Amazon Polly, in several different languages:
+The audio messages have been generated with Amazon Polly and can be downloaded in several different languages:
 
 - German: [audio-messages-polly-de.zip](https://seisfeld.github.io/tonuino/audio-messages-polly-de.zip)
 - English: [audio-messages-polly-en.zip](https://seisfeld.github.io/tonuino/audio-messages-polly-en.zip)
