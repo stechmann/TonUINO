@@ -220,7 +220,7 @@ enum {INIT, PLAY, PAUSE, PIN, CONFIG};
 enum {START, STOP, CHECK, SHUTDOWN};
 
 // preference actions
-enum {READ, WRITE, RESET, RESET_PROGRESS};
+enum {READ, WRITE, MIGRATE, RESET, RESET_PROGRESS};
 
 // define general configuration constants
 const uint8_t mp3SerialTxPin = 3;                   // mp3 serial tx, wired with 1k ohm to rx pin of DFPlayer Mini
@@ -262,6 +262,7 @@ const uint64_t enterPinCodeTimeout = 10000;         // time to enter the pin cod
 #endif
 
 // default values for preferences
+const uint8_t preferenceVersion = 1;
 const uint8_t mp3StartVolumeDefault = 15;
 const uint8_t mp3MaxVolumeDefault = 25;
 const uint8_t mp3MenuVolumeDefault = 15;
@@ -302,7 +303,7 @@ const char *mp3EqualizerName[] = {" ", "normal", "pop", "rock", "jazz", "classic
 
 // this object stores the nfc tag data
 struct nfcTagObject {
-  uint32_t magicCookie;
+  uint32_t cookie;
   uint8_t version;
   uint8_t assignedFolder;
   uint8_t playbackMode;
@@ -324,7 +325,7 @@ struct playbackObject {
 
 // this object stores the preferences
 struct preferenceObject {
-  uint32_t magicCookie;
+  uint32_t cookie;
   uint8_t version;
   uint8_t mp3StartVolume;
   uint8_t mp3MaxVolume;
@@ -337,6 +338,7 @@ struct preferenceObject {
 // global variables
 uint8_t inputEvent = NOACTION;
 uint32_t magicCookie = 0;
+uint32_t preferenceCookie = 0;
 
 // ################################################################################################################################################################
 // ############################################################### no configuration below this line ###############################################################
@@ -464,6 +466,10 @@ void setup() {
   magicCookie += (uint32_t)magicCookieHex[1] << 16;
   magicCookie += (uint32_t)magicCookieHex[2] << 8;
   magicCookie += (uint32_t)magicCookieHex[3];
+  preferenceCookie = (uint32_t)magicCookieHex[2] << 24;
+  preferenceCookie += (uint32_t)magicCookieHex[3] << 16;
+  preferenceCookie += (uint32_t)magicCookieHex[0] << 8;
+  preferenceCookie += (uint32_t)magicCookieHex[1];
 
   // start normal operation
   Serial.begin(debugConsoleSpeed);
@@ -471,6 +477,7 @@ void setup() {
   Serial.println(F("\n\nTonUINO JUKEBOX"));
   Serial.println(F("by Thorsten Voß"));
   Serial.println(F("Stephan Eisfeld"));
+  Serial.println(F("and many others"));
   Serial.println(F("---------------"));
   Serial.println(F("flashed"));
   Serial.print(F("  "));
@@ -628,7 +635,7 @@ void loop() {
     if (readNfcTagStatus == 1) {
       // #############################################################################
       // # nfc tag has our magic cookie on it, use data from nfc tag to start playback
-      if (nfcTag.magicCookie == magicCookie) {
+      if (nfcTag.cookie == magicCookie) {
         switchButtonConfiguration(PLAY);
         shutdownTimer(STOP);
 
@@ -681,7 +688,7 @@ void loop() {
 
       // #####################################################################################
       // # nfc tag does not have our magic cookie on it, start setup to configure this nfc tag
-      else if (nfcTag.magicCookie == 0) {
+      else if (nfcTag.cookie == 0) {
         bool tagSetupSuccessfull = false;
         playback.playListMode = false;
 
@@ -738,7 +745,7 @@ void loop() {
         }
 
         if (!tagSetupSuccessfull) {
-          nfcTag.magicCookie = 0;
+          nfcTag.cookie = 0;
           nfcTag.version = 0;
           nfcTag.assignedFolder = 0;
           nfcTag.playbackMode = 0;
@@ -1239,7 +1246,7 @@ uint8_t readNfcTagData() {
 
     // if cookie is not blank, update ncfTag object with data read from nfc tag
     if (tempMagicCookie != 0) {
-      nfcTag.magicCookie = tempMagicCookie;
+      nfcTag.cookie = tempMagicCookie;
       nfcTag.version = nfcTagReadBuffer[4];
       nfcTag.assignedFolder = nfcTagReadBuffer[5];
       nfcTag.playbackMode = nfcTagReadBuffer[6];
@@ -1249,7 +1256,7 @@ uint8_t readNfcTagData() {
     }
     // if magic cookie is blank, clear ncfTag object
     else {
-      nfcTag.magicCookie = 0;
+      nfcTag.cookie = 0;
       nfcTag.version = 0;
       nfcTag.assignedFolder = 0;
       nfcTag.playbackMode = 0;
@@ -1406,26 +1413,45 @@ void shutdownTimer(uint8_t timerAction) {
   }
 }
 
-// reads, writes and resets preferences in eeprom
+// reads, writes, migrates and resets preferences in eeprom
 void preferences(uint8_t preferenceAction) {
   Serial.print(F("prefs "));
   switch (preferenceAction) {
     case READ:
       Serial.println(F("read"));
       EEPROM.get(100, preference);
-      if (preference.magicCookie != magicCookie) {
-        Serial.println(F("  null"));
-        preferences(RESET);
+      if (preference.cookie != preferenceCookie) preferences(RESET);
+      else {
+        Serial.print(F("  v"));
+        Serial.println(preference.version);
+        preferences(MIGRATE);
       }
       break;
     case WRITE:
       Serial.println(F("write"));
       EEPROM.put(100, preference);
       break;
+    case MIGRATE:
+      Serial.println(F("migrate"));
+      switch (preference.version) {
+        // prepared for future preferences migration
+        //case 1:
+        //  Serial.println(F("  v1->v2"));
+        //  preference.version = 2;
+        //case 2:
+        //  Serial.println(F("  v2->v3"));
+        //  preference.version = 3;
+        //  preferences(WRITE);
+        //  break;
+        default:
+          Serial.println(F("  -"));
+          break;
+      }
+      break;
     case RESET:
       Serial.println(F("reset"));
-      preference.magicCookie = magicCookie;
-      preference.version = 1;
+      preference.cookie = preferenceCookie;
+      preference.version = preferenceVersion;
       preference.mp3StartVolume = mp3StartVolumeDefault;
       preference.mp3MaxVolume = mp3MaxVolumeDefault;
       preference.mp3MenuVolume = mp3MenuVolumeDefault;
@@ -1594,10 +1620,9 @@ void parentsMenu() {
     // startup volume
     else if (selectedOption == 2) {
       Serial.println(F("start vol"));
-      uint8_t promptResult = prompt(30, 930, 0, preference.mp3StartVolume, 0, false, true);
+      uint8_t promptResult = prompt(preference.mp3MaxVolume, 930, 0, preference.mp3StartVolume, 0, false, true);
       if (promptResult != 0) {
-        // startup volume can't be higher than maximum volume
-        preference.mp3StartVolume = min(promptResult, preference.mp3MaxVolume);
+        preference.mp3StartVolume = promptResult;
         preferences(WRITE);
         // set volume to menu volume
         mp3.setVolume(preference.mp3MenuVolume);
