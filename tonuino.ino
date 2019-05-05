@@ -401,35 +401,28 @@ class Mp3Notify {
           Serial.print(F("unknown"));
           break;
       }
-      Serial.print(F(" error "));
-      Serial.println(returnValue);
+      Serial.println(F(" error"));
     }
     static void OnPlayFinished(uint16_t returnValue) {
       playNextTrack(returnValue, true, false);
     }
     static void OnCardOnline(uint16_t returnValue) {
-      Serial.print(F("sd online "));
-      Serial.println(returnValue);
+      Serial.println(F("sd online"));
     }
     static void OnCardInserted(uint16_t returnValue) {
-      Serial.print(F("sd in "));
-      Serial.println(returnValue);
+      Serial.println(F("sd in"));
     }
     static void OnCardRemoved(uint16_t returnValue) {
-      Serial.print(F("sd out "));
-      Serial.println(returnValue);
+      Serial.println(F("sd out"));
     }
     static void OnUsbOnline(uint16_t returnValue) {
-      Serial.print(F("usb online "));
-      Serial.println(returnValue);
+      Serial.println(F("usb online"));
     }
     static void OnUsbInserted(uint16_t returnValue) {
-      Serial.print(F("usb in "));
-      Serial.println(returnValue);
+      Serial.println(F("usb in"));
     }
     static void OnUsbRemoved(uint16_t returnValue) {
-      Serial.print(F("usb out "));
-      Serial.println(returnValue);
+      Serial.println(F("usb out"));
     }
 };
 
@@ -1065,7 +1058,7 @@ void switchButtonConfiguration(uint8_t buttonMode) {
 void waitPlaybackToFinish(uint16_t statusLedBlinkInterval) {
   uint64_t waitPlaybackToStartMillis = millis();
 
-  delay(100);
+  delay(500);
   while (digitalRead(mp3BusyPin)) {
     if (millis() - waitPlaybackToStartMillis >= 10000) break;
 #ifdef STATUSLED
