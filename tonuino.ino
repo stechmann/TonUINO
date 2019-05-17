@@ -128,6 +128,13 @@
   The CubieKid case as well as the CubieKid circuit board, have been designed and developed
   by Jens Hackel aka DB3JHF and can be found here: https://www.thingiverse.com/thing:3148200
 
+  pololu switch:
+  ==============
+
+  If you want to use a pololu switch with this firmware the shutdown pin logic needs
+  to be flipped from HIGH (on) -> LOW (off) to LOW (on) -> HIGH (off). This can be done
+  by uncommenting the '#define POLOLUSWITCH' below.
+
   data stored on the nfc tags:
   ============================
 
@@ -181,6 +188,9 @@
 
 // uncomment the below line to enable low voltage shutdown support
 // #define LOWVOLTAGE
+
+// uncomment the below line to flip the shutdown pin logic
+// #define POLOLUSWITCH
 
 // include required libraries
 #include <avr/sleep.h>
@@ -454,7 +464,11 @@ Vcc shutdownVoltage(shutdownVoltageCorrection);                               //
 void setup() {
   // things we need to do immediately on startup
   pinMode(shutdownPin, OUTPUT);
+#ifndef POLOLUSWITCH
   digitalWrite(shutdownPin, HIGH);
+#else
+  digitalWrite(shutdownPin, LOW);
+#endif
   magicCookie = (uint32_t)magicCookieHex[0] << 24;
   magicCookie += (uint32_t)magicCookieHex[1] << 16;
   magicCookie += (uint32_t)magicCookieHex[2] << 8;
@@ -595,7 +609,11 @@ void loop() {
     mp3.playMp3FolderTrack(806);
     waitPlaybackToFinish(50);
     Serial.println(F("lv shut"));
+#ifndef POLOLUSWITCH
     digitalWrite(shutdownPin, LOW);
+#else
+    digitalWrite(shutdownPin, HIGH);
+#endif
   }
   else if (shutdownVoltage.Read_Volts() <= shutdownWarnVoltage) {
 #ifdef STATUSLED
@@ -1393,7 +1411,11 @@ void shutdownTimer(uint8_t timerAction) {
 #ifdef STATUSLED
       digitalWrite(statusLedPin, LOW);
 #endif
+#ifndef POLOLUSWITCH
       digitalWrite(shutdownPin, LOW);
+#else
+      digitalWrite(shutdownPin, HIGH);
+#endif
       mfrc522.PCD_AntennaOff();
       mfrc522.PCD_SoftPowerDown();
       mp3.sleep();
