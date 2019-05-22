@@ -18,8 +18,8 @@
   During playback:
   ----------------
   Hold B0 for 5 seconds - Reset progress to track 1 (story book mode)
-  Hold B1 for 2 seconds - Skip to the next track (album, party and story book mode)
-  Hold B2 for 2 seconds - Skip to the previous track (album, party and story book mode)
+  Hold B1 for 2 seconds - Skip to the next track ((v)album, (v)party and story book mode)
+  Hold B2 for 2 seconds - Skip to the previous track ((v)album, (v)party and story book mode)
 
   During parents menu:
   --------------------
@@ -73,7 +73,7 @@
   center - toggle box lock
   play+pause - toggle playback
   up / down - volume up / down
-  left / right - previous / next track (album, party and story book mode)
+  left / right - previous / next track ((v)album, (v)party and story book mode)
   menu - reset progress to track 1 (story book mode)
 
   During parents menu:
@@ -141,27 +141,28 @@
   On MIFARE Classic (Mini, 1K & 4K) tags:
   ---------------------------------------
 
-  Up to 16 bytes of data are stored in sector 1 / block 4, of which the first 8 bytes
+  Up to 16 bytes of data are stored in sector 1 / block 4, of which the first 9 bytes
   are currently in use:
 
-  13 37 B3 47 01 02 04 11 00 00 00 00 00 00 00 00
-  ----------- -- -- -- --
-       |      |  |  |  |
-       |      |  |  |  + assigned track (0x01-0xFF, only used in single mode)
-       |      |  |  + assigned playback mode (0x01-0x05)
-       |      |  + assigned folder (0x01-0x63)
-       |      + version (currently always 0x01)
-       + magic cookie to recognize that a card belongs to TonUINO (by default 0x13 0x37 0xb3 0x47)
+  13 37 B3 47 01 02 04 10 19 00 00 00 00 00 00 00
+  ----------- -- -- -- -- --
+       |      |  |  |  |  |
+       |      |  |  |  |  +- end track (0x01-0xFF - in vstory (0x06), valbum (0x07) and vparty (0x08) modes)
+       |      |  |  |  +- single/start track (0x01-0xFF - in single (0x04), vstory (0x06), valbum (0x07) and vparty (0x08) modes)
+       |      |  |  +- playback mode (0x01-0x08)
+       |      |  +- folder (0x01-0x63)
+       |      +- version (currently always 0x01)
+       +- magic cookie to recognize that a card belongs to TonUINO (by default 0x13 0x37 0xb3 0x47)
 
   On MIFARE Ultralight / Ultralight C and NTAG213/215/216 tags:
   -------------------------------------------------------------
 
-  Up to 16 bytes of data are stored in pages 8-11, of which the first 8 bytes
+  Up to 16 bytes of data are stored in pages 8-11, of which the first 9 bytes
   are currently in use:
 
    8   13 37 B3 47 - magic cookie to recognize that a card belongs to TonUINO (by default 0x13 0x37 0xb3 0x47)
-   9   01 02 04 11 - version, assigned folder, assigned playback mode, assigned track (if any)
-  10   00 00 00 00
+   9   01 02 04 10 - version, folder, playback mode, single track / start strack
+  10   19 00 00 00 - end track
   11   00 00 00 00
 
   additional non standard libraries used in this firmware:
@@ -213,7 +214,7 @@ using namespace ace_button;
 #endif
 
 // playback modes
-enum {NOMODE, STORY, ALBUM, PARTY, SINGLE, STORYBOOK};
+enum {NOMODE, STORY, ALBUM, PARTY, SINGLE, STORYBOOK, VSTORY, VALBUM, VPARTY};
 
 // button actions
 enum {NOACTION,
@@ -258,7 +259,7 @@ const uint16_t buttonLongLongPressDelay = 5000;     // longer long press delay f
 const uint32_t debugConsoleSpeed = 9600;            // speed for the debug console
 
 // number of mp3 files in advert folder + number of mp3 files in mp3 folder
-const uint16_t msgCount = 571;
+const uint16_t msgCount = 576;
 
 // define magic cookie (by default 0x13 0x37 0xb3 0x47)
 const uint8_t magicCookieHex[4] = {0x13, 0x37, 0xb3, 0x47};
@@ -278,7 +279,7 @@ const uint8_t mp3MaxVolumeDefault = 25;
 const uint8_t mp3MenuVolumeDefault = 15;
 const uint8_t mp3EqualizerDefault = 1;
 const uint8_t shutdownMinutesDefault = 10;
-const uint16_t irRemoteUserCodesDefault[7] = {0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000};
+const uint16_t irRemoteUserCodesDefault[7] = {};
 
 /*
   define hard coded (sets of) code mappings for ir remotes.
@@ -307,48 +308,53 @@ const float shutdownVoltageCorrection = 1.0 / 1.0;           // voltage measured
 #endif
 
 // define strings
-const char *playbackModeName[] = {" ", "story", "album", "party", "single", "storybook"};
+const char *playbackModeName[] = {" ", "story", "album", "party", "single", "storybook", "vstory", "valbum", "vparty"};
 const char *nfcStatusMessage[] = {" ", "read", "write", "ok", "failed"};
 const char *mp3EqualizerName[] = {" ", "normal", "pop", "rock", "jazz", "classic", "bass"};
 
-// this object stores the nfc tag data
-struct nfcTagObject {
-  uint32_t cookie;
-  uint8_t version;
-  uint8_t assignedFolder;
-  uint8_t playbackMode;
-  uint8_t assignedTrack;
-} nfcTag;
+// this struct stores nfc tag data
+struct nfcTagStruct {
+  uint32_t cookie = 0;
+  uint8_t version = 0;
+  uint8_t folder = 0;
+  uint8_t mode = 0;
+  uint8_t multiPurposeData1 = 0;
+  uint8_t multiPurposeData2 = 0;
+};
 
-// this object tracks the playback state
-struct playbackObject {
+// this struct stores playback state
+struct playbackStruct {
   bool isLocked = false;
   bool isPlaying = false;
-  bool firstTrack = true;
+  bool isFresh = true;
   bool playListMode = false;
   uint8_t mp3CurrentVolume = 0;
-  uint8_t playTrack = 1;
-  uint8_t storedTrack = 1;
-  uint8_t folderTrackCount = 0;
-  uint8_t playList[255];
-} playback;
+  uint8_t folderStartTrack = 0;
+  uint8_t folderEndTrack = 0;
+  uint8_t playList[255] = {};
+  uint8_t playListItem = 0;
+  uint8_t playListItemCount = 0;
+  nfcTagStruct currentTag;
+};
 
-// this object stores the preferences
-struct preferenceObject {
-  uint32_t cookie;
-  uint8_t version;
-  uint8_t mp3StartVolume;
-  uint8_t mp3MaxVolume;
-  uint8_t mp3MenuVolume;
-  uint8_t mp3Equalizer;
-  uint8_t shutdownMinutes;
-  uint16_t irRemoteUserCodes[7];
-} preference;
+// this struct stores preferences
+struct preferenceStruct {
+  uint32_t cookie = 0;
+  uint8_t version = 0;
+  uint8_t mp3StartVolume = 0;
+  uint8_t mp3MaxVolume = 0;
+  uint8_t mp3MenuVolume = 0;
+  uint8_t mp3Equalizer = 0;
+  uint8_t shutdownMinutes = 0;
+  uint16_t irRemoteUserCodes[7] = {};
+};
 
 // global variables
 uint8_t inputEvent = NOACTION;
 uint32_t magicCookie = 0;
 uint32_t preferenceCookie = 0;
+playbackStruct playback;
+preferenceStruct preference;
 
 // ################################################################################################################################################################
 // ############################################################### no configuration below this line ###############################################################
@@ -359,7 +365,7 @@ void checkForInput();
 void translateButtonInput(AceButton *button, uint8_t eventType, uint8_t /* buttonState */);
 void switchButtonConfiguration(uint8_t buttonMode);
 void waitPlaybackToFinish(uint16_t statusLedBlinkInterval);
-void printModeFolderTrack(uint8_t playTrack, bool cr);
+void printModeFolderTrack(bool cr);
 void playNextTrack(uint16_t globalTrack, bool directionForward, bool triggeredManually);
 uint8_t readNfcTagData();
 uint8_t writeNfcTagData(uint8_t nfcTagWriteBuffer[], uint8_t nfcTagWriteBufferSize);
@@ -383,33 +389,42 @@ class Mp3Notify {
   public:
     static void OnError(uint16_t returnValue) {
       switch (returnValue) {
-        case DfMp3_Error_Busy:
-          Serial.print(F("busy"));
-          break;
-        case DfMp3_Error_Sleeping:
-          Serial.print(F("sleep"));
-          break;
-        case DfMp3_Error_SerialWrongStack:
-          Serial.print(F("serial stack"));
-          break;
-        case DfMp3_Error_CheckSumNotMatch:
-          Serial.print(F("checksum"));
-          break;
-        case DfMp3_Error_FileIndexOut:
-          Serial.print(F("file index"));
-          break;
-        case DfMp3_Error_FileMismatch:
-          Serial.print(F("file mismatch"));
-          break;
-        case DfMp3_Error_Advertise:
-          Serial.print(F("advertise"));
-          break;
-        case DfMp3_Error_General:
-          Serial.print(F("general"));
-          break;
-        default:
-          Serial.print(F("unknown"));
-          break;
+        case DfMp3_Error_Busy: {
+            Serial.print(F("busy"));
+            break;
+          }
+        case DfMp3_Error_Sleeping: {
+            Serial.print(F("sleep"));
+            break;
+          }
+        case DfMp3_Error_SerialWrongStack: {
+            Serial.print(F("serial stack"));
+            break;
+          }
+        case DfMp3_Error_CheckSumNotMatch: {
+            Serial.print(F("checksum"));
+            break;
+          }
+        case DfMp3_Error_FileIndexOut: {
+            Serial.print(F("file index"));
+            break;
+          }
+        case DfMp3_Error_FileMismatch: {
+            Serial.print(F("file mismatch"));
+            break;
+          }
+        case DfMp3_Error_Advertise: {
+            Serial.print(F("advertise"));
+            break;
+          }
+        case DfMp3_Error_General: {
+            Serial.print(F("general"));
+            break;
+          }
+        default: {
+            Serial.print(F("unknown"));
+            break;
+          }
       }
       Serial.println(F(" error"));
     }
@@ -480,7 +495,6 @@ void setup() {
 
   // start normal operation
   Serial.begin(debugConsoleSpeed);
-  while (!Serial);
   Serial.println(F("\n\nTonUINO JUKEBOX"));
   Serial.println(F("by Thorsten Voß"));
   Serial.println(F("Stephan Eisfeld"));
@@ -585,7 +599,7 @@ void setup() {
       mp3.setVolume(playback.mp3CurrentVolume = preference.mp3StartVolume);
       mp3.setEq((DfMp3_Eq)(preference.mp3Equalizer - 1));
       shutdownTimer(START);
-      mp3.playMp3FolderTrack(807);
+      mp3.playMp3FolderTrack(809);
       waitPlaybackToFinish(50);
 #ifdef PINCODE
     }
@@ -605,8 +619,8 @@ void loop() {
 #ifdef LOWVOLTAGE
   // if low voltage level is reached, store progress and shutdown
   if (shutdownVoltage.Read_Volts() <= shutdownMinVoltage) {
-    if (nfcTag.playbackMode == STORYBOOK) EEPROM.update(nfcTag.assignedFolder, playback.playTrack);
-    mp3.playMp3FolderTrack(806);
+    if (playback.currentTag.mode == STORYBOOK) EEPROM.update(playback.currentTag.folder, playback.playList[playback.playListItem - 1]);
+    mp3.playMp3FolderTrack(808);
     waitPlaybackToFinish(50);
     Serial.println(F("lv shut"));
 #ifndef POLOLUSWITCH
@@ -635,10 +649,10 @@ void loop() {
   // # main code block, if nfc tag is detected and TonUINO is not locked do something
   if (mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial() && !playback.isLocked) {
     // if the current playback mode is story book mode, only while playing: store the current progress
-    if (nfcTag.playbackMode == STORYBOOK && playback.isPlaying) {
+    if (playback.currentTag.mode == STORYBOOK && playback.isPlaying) {
       Serial.print(F("save "));
-      printModeFolderTrack(playback.playTrack, true);
-      EEPROM.update(nfcTag.assignedFolder, playback.playTrack);
+      printModeFolderTrack(true);
+      EEPROM.update(playback.currentTag.folder, playback.playList[playback.playListItem - 1]);
     }
     uint8_t readNfcTagStatus = readNfcTagData();
     // ##############################
@@ -646,61 +660,95 @@ void loop() {
     if (readNfcTagStatus == 1) {
       // #############################################################################
       // # nfc tag has our magic cookie on it, use data from nfc tag to start playback
-      if (nfcTag.cookie == magicCookie) {
+      if (playback.currentTag.cookie == magicCookie) {
         switchButtonConfiguration(PLAY);
         shutdownTimer(STOP);
 
-        // prepare playlist for playback
         randomSeed(micros());
-        playback.folderTrackCount = mp3.getFolderTrackCount(nfcTag.assignedFolder);
-        for (uint8_t i = 0; i < 255; i++) playback.playList[i] = i + 1 <= playback.folderTrackCount ? i + 1 : 0;
 
-        switch (nfcTag.playbackMode) {
-          case STORY:
-            playback.playTrack = random(1, playback.folderTrackCount + 1);
-            break;
-          case ALBUM:
-            playback.playTrack = 1;
-            break;
-          case PARTY:
-            playback.playTrack = 1;
-            // shuffle playlist
-            for (uint8_t i = 0; i < playback.folderTrackCount; i++) {
-              uint8_t j = random(0, playback.folderTrackCount);
-              uint8_t temp = playback.playList[i];
-              playback.playList[i] = playback.playList[j];
-              playback.playList[j] = temp;
+        // prepare boundaries for playback
+        switch (playback.currentTag.mode) {
+          case STORY: {}
+          case ALBUM: {}
+          case PARTY: {}
+          case SINGLE: {}
+          case STORYBOOK: {
+              playback.folderStartTrack = 1;
+              playback.folderEndTrack = mp3.getFolderTrackCount(playback.currentTag.folder);
+              break;
             }
-            break;
-          case SINGLE:
-            playback.playTrack = nfcTag.assignedTrack;
-            break;
-          case STORYBOOK:
-            playback.storedTrack = EEPROM.read(nfcTag.assignedFolder);
-            // don't resume from eeprom, play from the beginning
-            if (playback.storedTrack == 0 || playback.storedTrack > playback.folderTrackCount) playback.playTrack = 1;
-            // resume from eeprom
-            else {
-              playback.playTrack = playback.storedTrack;
-              Serial.print(F("resume "));
+          case VSTORY: {}
+          case VALBUM: {}
+          case VPARTY: {
+              playback.folderStartTrack = playback.currentTag.multiPurposeData1;
+              playback.folderEndTrack = playback.currentTag.multiPurposeData2;
+              break;
             }
-            break;
-          default:
-            break;
+          default: {
+              break;
+            }
         }
 
-        playback.firstTrack = true;
+        // prepare playlist for playback
+        for (uint8_t i = 0; i < 255; i++) playback.playList[i] = playback.folderStartTrack + i <= playback.folderEndTrack ? playback.folderStartTrack + i : 0;
+        playback.playListItemCount = playback.folderEndTrack - playback.folderStartTrack + 1;
+
+        // prepare first track for playback
+        switch (playback.currentTag.mode) {
+          case VSTORY: {}
+          case STORY: {
+              playback.playListItem = random(1, playback.playListItemCount + 1);
+              break;
+            }
+          case VALBUM: {}
+          case ALBUM: {
+              playback.playListItem = 1;
+              break;
+            }
+          case VPARTY: {}
+          case PARTY: {
+              playback.playListItem = 1;
+              // shuffle playlist
+              for (uint8_t i = 0; i < playback.playListItemCount; i++) {
+                uint8_t j = random(0, playback.playListItemCount);
+                uint8_t temp = playback.playList[i];
+                playback.playList[i] = playback.playList[j];
+                playback.playList[j] = temp;
+              }
+              break;
+            }
+          case SINGLE: {
+              playback.playListItem = playback.currentTag.multiPurposeData1;
+              break;
+            }
+          case STORYBOOK: {
+              uint8_t storedTrack = EEPROM.read(playback.currentTag.folder);
+              // don't resume from eeprom, play from the beginning
+              if (storedTrack == 0 || storedTrack > playback.folderEndTrack) playback.playListItem = 1;
+              // resume from eeprom
+              else {
+                playback.playListItem = storedTrack;
+                Serial.print(F("resume "));
+              }
+              break;
+            }
+          default: {
+              break;
+            }
+        }
+
+        playback.isFresh = true;
         playback.playListMode = true;
-        printModeFolderTrack(playback.playList[playback.playTrack - 1], true);
-        mp3.playFolderTrack(nfcTag.assignedFolder, playback.playList[playback.playTrack - 1]);
+        printModeFolderTrack(true);
+        mp3.playFolderTrack(playback.currentTag.folder, playback.playList[playback.playListItem - 1]);
       }
       // # end - nfc tag has our magic cookie on it
       // ##########################################
 
       // #####################################################################################
       // # nfc tag does not have our magic cookie on it, start setup to configure this nfc tag
-      else if (nfcTag.cookie == 0) {
-        bool tagSetupSuccessfull = false;
+      else if (playback.currentTag.cookie == 0) {
+        nfcTagStruct newTag;
         playback.playListMode = false;
 
         // set volume to menu volume
@@ -712,24 +760,42 @@ void loop() {
         while (true) {
           Serial.println(F("setup tag"));
           Serial.println(F("folder"));
-          nfcTag.assignedFolder = prompt(99, 801, 0, 0, 0, true, false);
-          if (nfcTag.assignedFolder == 0) {
-            mp3.playMp3FolderTrack(805);
+          newTag.folder = prompt(99, 801, 0, 0, 0, true, false);
+          if (newTag.folder == 0) {
+            mp3.playMp3FolderTrack(807);
             waitPlaybackToFinish(500);
             break;
           }
           Serial.println(F("mode"));
-          nfcTag.playbackMode = prompt(5, 820, 820, 0, 0, false, false);
-          if (nfcTag.playbackMode == 0) {
-            mp3.playMp3FolderTrack(805);
+          newTag.mode = prompt(8, 820, 820, 0, 0, false, false);
+          if (newTag.mode == 0) {
+            mp3.playMp3FolderTrack(807);
             waitPlaybackToFinish(500);
             break;
           }
-          else if (nfcTag.playbackMode == SINGLE) {
-            Serial.println(F("track"));
-            nfcTag.assignedTrack = prompt(mp3.getFolderTrackCount(nfcTag.assignedFolder), 802, 0, 0, nfcTag.assignedFolder, true, false);
-            if (nfcTag.assignedTrack == 0) {
-              mp3.playMp3FolderTrack(805);
+          else if (newTag.mode == SINGLE) {
+            Serial.println(F("singletrack"));
+            newTag.multiPurposeData1 = prompt(mp3.getFolderTrackCount(newTag.folder), 802, 0, 0, newTag.folder, true, false);
+            newTag.multiPurposeData2 = 0;
+            if (newTag.multiPurposeData1 == 0) {
+              mp3.playMp3FolderTrack(807);
+              waitPlaybackToFinish(500);
+              break;
+            }
+          }
+          else if (newTag.mode == VSTORY || newTag.mode == VALBUM || newTag.mode == VPARTY) {
+            Serial.println(F("starttrack"));
+            newTag.multiPurposeData1 = prompt(mp3.getFolderTrackCount(newTag.folder), 803, 0, 0, newTag.folder, true, false);
+            if (newTag.multiPurposeData1 == 0) {
+              mp3.playMp3FolderTrack(807);
+              waitPlaybackToFinish(500);
+              break;
+            }
+            Serial.println(F("endtrack"));
+            newTag.multiPurposeData2 = prompt(mp3.getFolderTrackCount(newTag.folder), 804, 0, newTag.multiPurposeData1, newTag.folder, true, false);
+            newTag.multiPurposeData2 = max(newTag.multiPurposeData1, newTag.multiPurposeData2);
+            if (newTag.multiPurposeData2 == 0) {
+              mp3.playMp3FolderTrack(807);
               waitPlaybackToFinish(500);
               break;
             }
@@ -739,28 +805,18 @@ void loop() {
                                     magicCookieHex[2],                 // 3rd byte of magic cookie (by default 0xb3)
                                     magicCookieHex[3],                 // 4th byte of magic cookie (by default 0x47)
                                     0x01,                              // version 1
-                                    nfcTag.assignedFolder,             // the folder selected by the user
-                                    nfcTag.playbackMode,               // the playback mode selected by the user
-                                    nfcTag.assignedTrack,              // the track selected by the user
-                                    0x00, 0x00, 0x00, 0x00,            // reserved for future use
+                                    newTag.folder,                     // the folder selected by the user
+                                    newTag.mode,                       // the playback mode selected by the user
+                                    newTag.multiPurposeData1,          // multi purpose data (ie. single track for mode 4 and start of vfolder)
+                                    newTag.multiPurposeData2,          // multi purpose data (ie. end of vfolder, depending on mode)
+                                    0x00, 0x00, 0x00,                  // reserved for future use
                                     0x00, 0x00, 0x00, 0x00             // reserved for future use
                                    };
           uint8_t writeNfcTagStatus = writeNfcTagData(bytesToWrite, sizeof(bytesToWrite));
-          if (writeNfcTagStatus == 1) {
-            tagSetupSuccessfull = true;
-            mp3.playMp3FolderTrack(803);
-          }
-          else mp3.playMp3FolderTrack(804);
+          if (writeNfcTagStatus == 1) mp3.playMp3FolderTrack(805);
+          else mp3.playMp3FolderTrack(806);
           waitPlaybackToFinish(500);
           break;
-        }
-
-        if (!tagSetupSuccessfull) {
-          nfcTag.cookie = 0;
-          nfcTag.version = 0;
-          nfcTag.assignedFolder = 0;
-          nfcTag.playbackMode = 0;
-          nfcTag.assignedTrack = 0;
         }
         mfrc522.PICC_HaltA();
         mfrc522.PCD_StopCrypto1();
@@ -808,10 +864,10 @@ void loop() {
       Serial.println(F("pause"));
       mp3.pause();
       // if the current playback mode is story book mode: store the current progress
-      if (nfcTag.playbackMode == STORYBOOK) {
+      if (playback.currentTag.mode == STORYBOOK) {
         Serial.print(F("save "));
-        printModeFolderTrack(playback.playTrack, true);
-        EEPROM.update(nfcTag.assignedFolder, playback.playTrack);
+        printModeFolderTrack(true);
+        EEPROM.update(playback.currentTag.folder, playback.playList[playback.playListItem - 1]);
       }
     }
     else {
@@ -839,23 +895,23 @@ void loop() {
       Serial.println(playback.mp3CurrentVolume);
     }
   }
-  // button 1 (right) hold for 2 sec or button 5 press or ir remote right, only during album, party and story book mode while playing: next track
-  else if ((((inputEvent == B1H || inputEvent == B4P) && !playback.isLocked) || inputEvent == IRR) && (nfcTag.playbackMode == ALBUM || nfcTag.playbackMode == PARTY || nfcTag.playbackMode == STORYBOOK) && playback.isPlaying) {
+  // button 1 (right) hold for 2 sec or button 5 press or ir remote right, only during (v)album, (v)party and story book mode while playing: next track
+  else if ((((inputEvent == B1H || inputEvent == B4P) && !playback.isLocked) || inputEvent == IRR) && (playback.currentTag.mode == ALBUM || playback.currentTag.mode == PARTY || playback.currentTag.mode == STORYBOOK || playback.currentTag.mode == VALBUM || playback.currentTag.mode == VPARTY) && playback.isPlaying) {
     Serial.println(F("next"));
     playNextTrack(0, true, true);
   }
-  // button 2 (left) hold for 2 sec or button 4 press or ir remote left, only during album, party and story book mode while playing: previous track
-  else if ((((inputEvent == B2H || inputEvent == B3P) && !playback.isLocked) || inputEvent == IRL) && (nfcTag.playbackMode == ALBUM || nfcTag.playbackMode == PARTY || nfcTag.playbackMode == STORYBOOK) && playback.isPlaying) {
+  // button 2 (left) hold for 2 sec or button 4 press or ir remote left, only during (v)album, (v)party and story book mode while playing: previous track
+  else if ((((inputEvent == B2H || inputEvent == B3P) && !playback.isLocked) || inputEvent == IRL) && (playback.currentTag.mode == ALBUM || playback.currentTag.mode == PARTY || playback.currentTag.mode == STORYBOOK || playback.currentTag.mode == VALBUM || playback.currentTag.mode == VPARTY) && playback.isPlaying) {
     Serial.println(F("prev"));
     playNextTrack(0, false, true);
   }
   // button 0 (middle) hold for 5 sec or ir remote menu, only during story book mode while playing: reset progress
-  else if (((inputEvent == B0H && !playback.isLocked) || inputEvent == IRM) && nfcTag.playbackMode == STORYBOOK && playback.isPlaying) {
-    playback.playTrack = 1;
+  else if (((inputEvent == B0H && !playback.isLocked) || inputEvent == IRM) && playback.currentTag.mode == STORYBOOK && playback.isPlaying) {
+    playback.playListItem = 1;
     Serial.print(F("reset "));
-    printModeFolderTrack(playback.playTrack, true);
-    EEPROM.update(nfcTag.assignedFolder, 0);
-    mp3.playFolderTrack(nfcTag.assignedFolder, playback.playTrack);
+    printModeFolderTrack(true);
+    EEPROM.update(playback.currentTag.folder, 0);
+    mp3.playFolderTrack(playback.currentTag.folder, playback.playList[playback.playListItem - 1]);
   }
   // button 0 (middle) hold for 5 sec or ir remote menu while not playing: parents menu
   else if (((inputEvent == B0H && !playback.isLocked) || inputEvent == IRM) && !playback.isPlaying) {
@@ -924,151 +980,177 @@ void checkForInput() {
 void translateButtonInput(AceButton *button, uint8_t eventType, uint8_t /* buttonState */) {
   switch (button->getId()) {
     // button 0 (middle)
-    case 0:
-      switch (eventType) {
-        case AceButton::kEventClicked:
-          inputEvent = B0P;
-          break;
-        case AceButton::kEventLongPressed:
-          inputEvent = B0H;
-          break;
-        case AceButton::kEventDoubleClicked:
-          inputEvent = B0D;
-          break;
-        default:
-          break;
+    case 0: {
+        switch (eventType) {
+          case AceButton::kEventClicked: {
+              inputEvent = B0P;
+              break;
+            }
+          case AceButton::kEventLongPressed: {
+              inputEvent = B0H;
+              break;
+            }
+          case AceButton::kEventDoubleClicked: {
+              inputEvent = B0D;
+              break;
+            }
+          default: {
+              break;
+            }
+        }
+        break;
       }
-      break;
     // button 1 (right)
-    case 1:
-      switch (eventType) {
-        case AceButton::kEventClicked:
-          inputEvent = B1P;
-          break;
-        case AceButton::kEventLongPressed:
-          inputEvent = B1H;
-          break;
-        default:
-          break;
+    case 1: {
+        switch (eventType) {
+          case AceButton::kEventClicked: {
+              inputEvent = B1P;
+              break;
+            }
+          case AceButton::kEventLongPressed: {
+              inputEvent = B1H;
+              break;
+            }
+          default: {
+              break;
+            }
+        }
+        break;
       }
-      break;
     // button 2 (left)
-    case 2:
-      switch (eventType) {
-        case AceButton::kEventClicked:
-          inputEvent = B2P;
-          break;
-        case AceButton::kEventLongPressed:
-          inputEvent = B2H;
-          break;
-        default:
-          break;
+    case 2: {
+        switch (eventType) {
+          case AceButton::kEventClicked: {
+              inputEvent = B2P;
+              break;
+            }
+          case AceButton::kEventLongPressed: {
+              inputEvent = B2H;
+              break;
+            }
+          default: {
+              break;
+            }
+        }
+        break;
       }
-      break;
 #ifdef FIVEBUTTONS
     // optional 4th button
-    case 3:
-      switch (eventType) {
-        case AceButton::kEventClicked:
-          inputEvent = B3P;
-          break;
-        default:
-          break;
+    case 3: {
+        switch (eventType) {
+          case AceButton::kEventClicked: {
+              inputEvent = B3P;
+              break;
+            }
+          default: {
+              break;
+            }
+        }
+        break;
       }
-      break;
     // optional 5th button
-    case 4:
-      switch (eventType) {
-        case AceButton::kEventClicked:
-          inputEvent = B4P;
-          break;
-        default:
-          break;
+    case 4: {
+        switch (eventType) {
+          case AceButton::kEventClicked: {
+              inputEvent = B4P;
+              break;
+            }
+          default: {
+              break;
+            }
+        }
+        break;
       }
-      break;
 #endif
-    default:
-      break;
+    default: {
+        break;
+      }
   }
 }
 
 // switches button configuration dependig on the state that TonUINO is in
 void switchButtonConfiguration(uint8_t buttonMode) {
   switch (buttonMode) {
-    case INIT:
-      // button 0 (middle)
-      button0Config.setEventHandler(translateButtonInput);
-      button0Config.setFeature(ButtonConfig::kFeatureClick);
-      button0Config.setFeature(ButtonConfig::kFeatureSuppressAfterClick);
-      button0Config.setClickDelay(buttonClickDelay);
-      button0Config.setFeature(ButtonConfig::kFeatureLongPress);
-      button0Config.setFeature(ButtonConfig::kFeatureSuppressAfterLongPress);
-      button0Config.setLongPressDelay(buttonShortLongPressDelay);
-      // button 1 (right)
-      button1Config.setEventHandler(translateButtonInput);
-      button1Config.setFeature(ButtonConfig::kFeatureClick);
-      button1Config.setFeature(ButtonConfig::kFeatureSuppressAfterClick);
-      button1Config.setClickDelay(buttonClickDelay);
+    case INIT: {
+        // button 0 (middle)
+        button0Config.setEventHandler(translateButtonInput);
+        button0Config.setFeature(ButtonConfig::kFeatureClick);
+        button0Config.setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+        button0Config.setClickDelay(buttonClickDelay);
+        button0Config.setFeature(ButtonConfig::kFeatureLongPress);
+        button0Config.setFeature(ButtonConfig::kFeatureSuppressAfterLongPress);
+        button0Config.setLongPressDelay(buttonShortLongPressDelay);
+        // button 1 (right)
+        button1Config.setEventHandler(translateButtonInput);
+        button1Config.setFeature(ButtonConfig::kFeatureClick);
+        button1Config.setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+        button1Config.setClickDelay(buttonClickDelay);
 #ifndef FIVEBUTTONS
-      // only enable long press on button 1 (right) when in 3 button mode
-      button1Config.setFeature(ButtonConfig::kFeatureLongPress);
-      button1Config.setFeature(ButtonConfig::kFeatureSuppressAfterLongPress);
-      button1Config.setLongPressDelay(buttonShortLongPressDelay);
+        // only enable long press on button 1 (right) when in 3 button mode
+        button1Config.setFeature(ButtonConfig::kFeatureLongPress);
+        button1Config.setFeature(ButtonConfig::kFeatureSuppressAfterLongPress);
+        button1Config.setLongPressDelay(buttonShortLongPressDelay);
 #endif
-      // button 2 (left)
-      button2Config.setEventHandler(translateButtonInput);
-      button2Config.setFeature(ButtonConfig::kFeatureClick);
-      button2Config.setFeature(ButtonConfig::kFeatureSuppressAfterClick);
-      button2Config.setClickDelay(buttonClickDelay);
+        // button 2 (left)
+        button2Config.setEventHandler(translateButtonInput);
+        button2Config.setFeature(ButtonConfig::kFeatureClick);
+        button2Config.setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+        button2Config.setClickDelay(buttonClickDelay);
 #ifndef FIVEBUTTONS
-      // only enable long press on button 2 (left) when in 3 button mode
-      button2Config.setFeature(ButtonConfig::kFeatureLongPress);
-      button2Config.setFeature(ButtonConfig::kFeatureSuppressAfterLongPress);
-      button2Config.setLongPressDelay(buttonShortLongPressDelay);
+        // only enable long press on button 2 (left) when in 3 button mode
+        button2Config.setFeature(ButtonConfig::kFeatureLongPress);
+        button2Config.setFeature(ButtonConfig::kFeatureSuppressAfterLongPress);
+        button2Config.setLongPressDelay(buttonShortLongPressDelay);
 #endif
 #ifdef FIVEBUTTONS
-      // optional 4th button
-      button3Config.setEventHandler(translateButtonInput);
-      button3Config.setFeature(ButtonConfig::kFeatureClick);
-      button3Config.setFeature(ButtonConfig::kFeatureSuppressAfterClick);
-      button3Config.setClickDelay(buttonClickDelay);
-      // optional 5th button
-      button4Config.setEventHandler(translateButtonInput);
-      button4Config.setFeature(ButtonConfig::kFeatureClick);
-      button4Config.setFeature(ButtonConfig::kFeatureSuppressAfterClick);
-      button4Config.setClickDelay(buttonClickDelay);
+        // optional 4th button
+        button3Config.setEventHandler(translateButtonInput);
+        button3Config.setFeature(ButtonConfig::kFeatureClick);
+        button3Config.setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+        button3Config.setClickDelay(buttonClickDelay);
+        // optional 5th button
+        button4Config.setEventHandler(translateButtonInput);
+        button4Config.setFeature(ButtonConfig::kFeatureClick);
+        button4Config.setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+        button4Config.setClickDelay(buttonClickDelay);
 #endif
-      break;
-    case PLAY:
-      // button 0 (middle)
-      button0Config.clearFeature(ButtonConfig::kFeatureDoubleClick);
-      button0Config.clearFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
-      button0Config.clearFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
-      button0Config.setLongPressDelay(buttonLongLongPressDelay);
-      break;
-    case PAUSE:
-      // button 0 (middle)
-      button0Config.clearFeature(ButtonConfig::kFeatureDoubleClick);
-      button0Config.clearFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
-      button0Config.clearFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
-      button0Config.setLongPressDelay(buttonLongLongPressDelay);
-      break;
-    case PIN:
-      // button 0 (middle)
-      button0Config.clearFeature(ButtonConfig::kFeatureDoubleClick);
-      button0Config.clearFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
-      button0Config.clearFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
-      button0Config.setLongPressDelay(buttonShortLongPressDelay);
-      break;
-    case CONFIG:
-      // button 0 (middle)
-      button0Config.setFeature(ButtonConfig::kFeatureDoubleClick);
-      button0Config.setFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
-      button0Config.setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
-      button0Config.setLongPressDelay(buttonShortLongPressDelay);
-      break;
-    default:
-      break;
+        break;
+      }
+    case PLAY: {
+        // button 0 (middle)
+        button0Config.clearFeature(ButtonConfig::kFeatureDoubleClick);
+        button0Config.clearFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
+        button0Config.clearFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
+        button0Config.setLongPressDelay(buttonLongLongPressDelay);
+        break;
+      }
+    case PAUSE: {
+        // button 0 (middle)
+        button0Config.clearFeature(ButtonConfig::kFeatureDoubleClick);
+        button0Config.clearFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
+        button0Config.clearFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
+        button0Config.setLongPressDelay(buttonLongLongPressDelay);
+        break;
+      }
+    case PIN: {
+        // button 0 (middle)
+        button0Config.clearFeature(ButtonConfig::kFeatureDoubleClick);
+        button0Config.clearFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
+        button0Config.clearFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
+        button0Config.setLongPressDelay(buttonShortLongPressDelay);
+        break;
+      }
+    case CONFIG: {
+        // button 0 (middle)
+        button0Config.setFeature(ButtonConfig::kFeatureDoubleClick);
+        button0Config.setFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
+        button0Config.setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
+        button0Config.setLongPressDelay(buttonShortLongPressDelay);
+        break;
+      }
+    default: {
+        break;
+      }
   }
 }
 
@@ -1091,14 +1173,28 @@ void waitPlaybackToFinish(uint16_t statusLedBlinkInterval) {
 }
 
 // prints current mode, folder and track information
-void printModeFolderTrack(uint8_t playTrack, bool cr) {
-  Serial.print(playbackModeName[nfcTag.playbackMode]);
+void printModeFolderTrack(bool cr) {
+  Serial.print(playbackModeName[playback.currentTag.mode]);
   Serial.print(F("-"));
-  Serial.print(nfcTag.assignedFolder);
+  Serial.print(playback.currentTag.folder);
   Serial.print(F("-"));
-  Serial.print(playTrack);
+  Serial.print(playback.playListItem);
   Serial.print(F("/"));
-  Serial.print(playback.folderTrackCount);
+  Serial.print(playback.playListItemCount);
+  if (playback.currentTag.mode == PARTY) {
+    Serial.print(F("-("));
+    Serial.print(playback.playList[playback.playListItem - 1]);
+    Serial.print(F(")"));
+  }
+  else if (playback.currentTag.mode == VSTORY || playback.currentTag.mode == VALBUM || playback.currentTag.mode == VPARTY) {
+    Serial.print(F("-("));
+    Serial.print(playback.folderStartTrack);
+    Serial.print(F("->"));
+    Serial.print(playback.folderEndTrack);
+    Serial.print(F("|"));
+    Serial.print(playback.playList[playback.playListItem - 1]);
+    Serial.print(F(")"));
+  }
   if (cr) Serial.println();
 }
 
@@ -1114,12 +1210,13 @@ void playNextTrack(uint16_t globalTrack, bool directionForward, bool triggeredMa
 
   // story mode (1): play one random track in folder
   // single mode (4): play one single track in folder
-  // there is no next track in story and single mode, stop playback
-  if (nfcTag.playbackMode == STORY || nfcTag.playbackMode == SINGLE) {
+  // vstory mode (6): play one random track in virtual folder
+  // there is no next track in story, single and vstory mode, stop playback
+  if (playback.currentTag.mode == STORY || playback.currentTag.mode == SINGLE || playback.currentTag.mode == VSTORY) {
     playback.playListMode = false;
     switchButtonConfiguration(PAUSE);
     shutdownTimer(START);
-    Serial.print(playbackModeName[nfcTag.playbackMode]);
+    Serial.print(playbackModeName[playback.currentTag.mode]);
     Serial.println(F("-stop"));
     mp3.stop();
   }
@@ -1127,13 +1224,15 @@ void playNextTrack(uint16_t globalTrack, bool directionForward, bool triggeredMa
   // album mode (2): play the complete folder
   // party mode (3): shuffle the complete folder
   // story book mode (5): play the complete folder and track progress
+  // valbum mode (7): play the complete virtual folder
+  // vparty mode (8): shuffle the complete virtual folder
   // advance to the next or previous track, stop if the end of the folder is reached
-  if (nfcTag.playbackMode == ALBUM || nfcTag.playbackMode == PARTY || nfcTag.playbackMode == STORYBOOK) {
+  if (playback.currentTag.mode == ALBUM || playback.currentTag.mode == PARTY || playback.currentTag.mode == STORYBOOK || playback.currentTag.mode == VALBUM || playback.currentTag.mode == VPARTY) {
 
     // **workaround for some DFPlayer mini modules that make two callbacks in a row when finishing a track**
     // reset lastCallTrack to avoid lockup when playback was just started
-    if (playback.firstTrack) {
-      playback.firstTrack = false;
+    if (playback.isFresh) {
+      playback.isFresh = false;
       lastCallTrack = 0;
     }
     // check if we automatically get called with the same track number twice in a row, if yes return immediately
@@ -1143,10 +1242,10 @@ void playNextTrack(uint16_t globalTrack, bool directionForward, bool triggeredMa
     // play next track?
     if (directionForward) {
       // there are more tracks after the current one, play next track
-      if (playback.playTrack < playback.folderTrackCount) {
-        playback.playTrack++;
-        printModeFolderTrack(playback.playList[playback.playTrack - 1], true);
-        mp3.playFolderTrack(nfcTag.assignedFolder, playback.playList[playback.playTrack - 1]);
+      if (playback.playListItem < playback.playListItemCount) {
+        playback.playListItem++;
+        printModeFolderTrack(true);
+        mp3.playFolderTrack(playback.currentTag.folder, playback.playList[playback.playListItem - 1]);
       }
       // there are no more tracks after the current one
       else {
@@ -1155,11 +1254,11 @@ void playNextTrack(uint16_t globalTrack, bool directionForward, bool triggeredMa
           playback.playListMode = false;
           switchButtonConfiguration(PAUSE);
           shutdownTimer(START);
-          Serial.print(playbackModeName[nfcTag.playbackMode]);
+          Serial.print(playbackModeName[playback.currentTag.mode]);
           Serial.print(F("-stop"));
-          if (nfcTag.playbackMode == STORYBOOK) {
+          if (playback.currentTag.mode == STORYBOOK) {
             Serial.print(F("-reset"));
-            EEPROM.update(nfcTag.assignedFolder, 0);
+            EEPROM.update(playback.currentTag.folder, 0);
           }
           Serial.println();
           mp3.stop();
@@ -1169,10 +1268,10 @@ void playNextTrack(uint16_t globalTrack, bool directionForward, bool triggeredMa
     // play previous track?
     else {
       // there are more tracks before the current one, play the previous track
-      if (playback.playTrack > 1) {
-        playback.playTrack--;
-        printModeFolderTrack(playback.playList[playback.playTrack - 1], true);
-        mp3.playFolderTrack(nfcTag.assignedFolder, playback.playList[playback.playTrack - 1]);
+      if (playback.playListItem > 1) {
+        playback.playListItem--;
+        printModeFolderTrack(true);
+        mp3.playFolderTrack(playback.currentTag.folder, playback.playList[playback.playListItem - 1]);
       }
     }
   }
@@ -1180,8 +1279,8 @@ void playNextTrack(uint16_t globalTrack, bool directionForward, bool triggeredMa
 
 // reads data from nfc tag
 uint8_t readNfcTagData() {
-  uint8_t nfcTagReadBuffer[16];
-  uint8_t piccReadBuffer[18];
+  uint8_t nfcTagReadBuffer[16] = {};
+  uint8_t piccReadBuffer[18] = {};
   uint8_t piccReadBufferSize = sizeof(piccReadBuffer);
   bool nfcTagReadSuccess = false;
   MFRC522::StatusCode piccStatus;
@@ -1209,7 +1308,7 @@ uint8_t readNfcTagData() {
   }
   else if (piccType == MFRC522::PICC_TYPE_MIFARE_UL) {
     uint8_t ultralightStartPage = 8;
-    uint8_t ultralightACK[] = {0, 0};
+    uint8_t ultralightACK[2] = {};
     MFRC522::MIFARE_Key ultralightKey;
     for (uint8_t i = 0; i < 4; i++) ultralightKey.keyByte[i] = 0xFF;
 
@@ -1249,7 +1348,7 @@ uint8_t readNfcTagData() {
     printNfcTagData(nfcTagReadBuffer, sizeof(nfcTagReadBuffer), true);
 
     // convert 4 byte magic cookie to 32bit decimal for easier handling
-    uint32_t tempMagicCookie;
+    uint32_t tempMagicCookie = 0;
     tempMagicCookie  = (uint32_t)nfcTagReadBuffer[0] << 24;
     tempMagicCookie += (uint32_t)nfcTagReadBuffer[1] << 16;
     tempMagicCookie += (uint32_t)nfcTagReadBuffer[2] << 8;
@@ -1257,21 +1356,23 @@ uint8_t readNfcTagData() {
 
     // if cookie is not blank, update ncfTag object with data read from nfc tag
     if (tempMagicCookie != 0) {
-      nfcTag.cookie = tempMagicCookie;
-      nfcTag.version = nfcTagReadBuffer[4];
-      nfcTag.assignedFolder = nfcTagReadBuffer[5];
-      nfcTag.playbackMode = nfcTagReadBuffer[6];
-      nfcTag.assignedTrack = nfcTagReadBuffer[7];
+      playback.currentTag.cookie = tempMagicCookie;
+      playback.currentTag.version = nfcTagReadBuffer[4];
+      playback.currentTag.folder = nfcTagReadBuffer[5];
+      playback.currentTag.mode = nfcTagReadBuffer[6];
+      playback.currentTag.multiPurposeData1 = nfcTagReadBuffer[7];
+      playback.currentTag.multiPurposeData2 = nfcTagReadBuffer[8];
       mfrc522.PICC_HaltA();
       mfrc522.PCD_StopCrypto1();
     }
     // if magic cookie is blank, clear ncfTag object
     else {
-      nfcTag.cookie = 0;
-      nfcTag.version = 0;
-      nfcTag.assignedFolder = 0;
-      nfcTag.playbackMode = 0;
-      nfcTag.assignedTrack = 0;
+      playback.currentTag.cookie = 0;
+      playback.currentTag.version = 0;
+      playback.currentTag.folder = 0;
+      playback.currentTag.mode = 0;
+      playback.currentTag.multiPurposeData1 = 0;
+      playback.currentTag.multiPurposeData2 = 0;
     }
     return 1;
   }
@@ -1286,7 +1387,7 @@ uint8_t readNfcTagData() {
 
 // writes data to nfc tag
 uint8_t writeNfcTagData(uint8_t nfcTagWriteBuffer[], uint8_t nfcTagWriteBufferSize) {
-  uint8_t piccWriteBuffer[16];
+  uint8_t piccWriteBuffer[16] = {};
   bool nfcTagWriteSuccess = false;
   MFRC522::StatusCode piccStatus;
   MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
@@ -1302,7 +1403,6 @@ uint8_t writeNfcTagData(uint8_t nfcTagWriteBuffer[], uint8_t nfcTagWriteBufferSi
     piccStatus = (MFRC522::StatusCode)mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, classicTrailerBlock, &classicKey, &mfrc522.uid);
     if (piccStatus == MFRC522::STATUS_OK) {
       // write 16 bytes to nfc tag (by default sector 1 / block 4)
-      memset(piccWriteBuffer, 0, sizeof(piccWriteBuffer));
       memcpy(piccWriteBuffer, nfcTagWriteBuffer, sizeof(piccWriteBuffer));
       piccStatus = (MFRC522::StatusCode)mfrc522.MIFARE_Write(classicBlock, piccWriteBuffer, sizeof(piccWriteBuffer));
       if (piccStatus == MFRC522::STATUS_OK) nfcTagWriteSuccess = true;
@@ -1312,7 +1412,7 @@ uint8_t writeNfcTagData(uint8_t nfcTagWriteBuffer[], uint8_t nfcTagWriteBufferSi
   }
   else if (piccType == MFRC522::PICC_TYPE_MIFARE_UL) {
     uint8_t ultralightStartPage = 8;
-    uint8_t ultralightACK[] = {0, 0};
+    uint8_t ultralightACK[2] = {};
     MFRC522::MIFARE_Key ultralightKey;
     for (uint8_t i = 0; i < 4; i++) ultralightKey.keyByte[i] = 0xFF;
 
@@ -1321,7 +1421,6 @@ uint8_t writeNfcTagData(uint8_t nfcTagWriteBuffer[], uint8_t nfcTagWriteBufferSi
     if (piccStatus == MFRC522::STATUS_OK) {
       // write 16 bytes to nfc tag (by default pages 8-11)
       for (uint8_t ultralightPage = ultralightStartPage; ultralightPage < ultralightStartPage + 4; ultralightPage++) {
-        memset(piccWriteBuffer, 0, sizeof(piccWriteBuffer));
         memcpy(piccWriteBuffer, nfcTagWriteBuffer + ((ultralightPage * 4) - (ultralightStartPage * 4)), 4);
         piccStatus = (MFRC522::StatusCode)mfrc522.MIFARE_Write(ultralightPage, piccWriteBuffer, sizeof(piccWriteBuffer));
         if (piccStatus == MFRC522::STATUS_OK) nfcTagWriteSuccess = true;
@@ -1374,17 +1473,20 @@ void printNfcTagData(uint8_t dataBuffer[], uint8_t dataBufferSize, bool cr) {
 // prints nfc tag type
 void printNfcTagType(MFRC522::PICC_Type nfcTagType) {
   switch (nfcTagType) {
-    case MFRC522::PICC_TYPE_MIFARE_MINI:
-    case MFRC522::PICC_TYPE_MIFARE_1K:
-    case MFRC522::PICC_TYPE_MIFARE_4K:
-      Serial.print(F("cl"));
-      break;
-    case MFRC522::PICC_TYPE_MIFARE_UL:
-      Serial.print(F("ul|nt"));
-      break;
-    default:
-      Serial.print(F("??"));
-      break;
+    case MFRC522::PICC_TYPE_MIFARE_MINI: {}
+    case MFRC522::PICC_TYPE_MIFARE_1K: {}
+    case MFRC522::PICC_TYPE_MIFARE_4K: {
+        Serial.print(F("cl"));
+        break;
+      }
+    case MFRC522::PICC_TYPE_MIFARE_UL: {
+        Serial.print(F("ul|nt"));
+        break;
+      }
+    default: {
+        Serial.print(F("??"));
+        break;
+      }
   }
   Serial.print(nfcStatusMessage[0]);
 }
@@ -1394,37 +1496,42 @@ void shutdownTimer(uint8_t timerAction) {
   static uint64_t shutdownMillis = 0;
 
   switch (timerAction) {
-    case START:
-      if (preference.shutdownMinutes != 0) shutdownMillis = millis() + (preference.shutdownMinutes * 60000);
-      else shutdownMillis = 0;
-      break;
-    case STOP:
-      shutdownMillis = 0;
-      break;
-    case CHECK:
-      if (shutdownMillis != 0 && millis() > shutdownMillis) {
-        Serial.println(F("idle shut"));
-        shutdownTimer(SHUTDOWN);
+    case START: {
+        if (preference.shutdownMinutes != 0) shutdownMillis = millis() + (preference.shutdownMinutes * 60000);
+        else shutdownMillis = 0;
+        break;
       }
-      break;
-    case SHUTDOWN:
+    case STOP: {
+        shutdownMillis = 0;
+        break;
+      }
+    case CHECK: {
+        if (shutdownMillis != 0 && millis() > shutdownMillis) {
+          Serial.println(F("idle shut"));
+          shutdownTimer(SHUTDOWN);
+        }
+        break;
+      }
+    case SHUTDOWN: {
 #ifdef STATUSLED
-      digitalWrite(statusLedPin, LOW);
+        digitalWrite(statusLedPin, LOW);
 #endif
 #ifndef POLOLUSWITCH
-      digitalWrite(shutdownPin, LOW);
+        digitalWrite(shutdownPin, LOW);
 #else
-      digitalWrite(shutdownPin, HIGH);
+        digitalWrite(shutdownPin, HIGH);
 #endif
-      mfrc522.PCD_AntennaOff();
-      mfrc522.PCD_SoftPowerDown();
-      mp3.sleep();
-      set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-      cli();
-      sleep_mode();
-      break;
-    default:
-      break;
+        mfrc522.PCD_AntennaOff();
+        mfrc522.PCD_SoftPowerDown();
+        mp3.sleep();
+        set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+        cli();
+        sleep_mode();
+        break;
+      }
+    default: {
+        break;
+      }
   }
 }
 
@@ -1432,60 +1539,69 @@ void shutdownTimer(uint8_t timerAction) {
 void preferences(uint8_t preferenceAction) {
   Serial.print(F("prefs "));
   switch (preferenceAction) {
-    case READ:
-      Serial.println(F("read"));
-      EEPROM.get(100, preference);
-      if (preference.cookie != preferenceCookie) preferences(RESET);
-      else {
-        Serial.print(F("  v"));
-        Serial.println(preference.version);
-        preferences(MIGRATE);
+    case READ: {
+        Serial.println(F("read"));
+        EEPROM.get(100, preference);
+        if (preference.cookie != preferenceCookie) preferences(RESET);
+        else {
+          Serial.print(F("  v"));
+          Serial.println(preference.version);
+          preferences(MIGRATE);
+        }
+        break;
       }
-      break;
-    case WRITE:
-      Serial.println(F("write"));
-      EEPROM.put(100, preference);
-      break;
-    case MIGRATE:
-      Serial.println(F("migrate"));
-      switch (preference.version) {
+    case WRITE: {
+        Serial.println(F("write"));
+        EEPROM.put(100, preference);
+        break;
+      }
+    case MIGRATE: {
+        Serial.println(F("migrate"));
         // prepared for future preferences migration
-        //case 1:
-        //  Serial.println(F("  v1->v2"));
-        //  preference.version = 2;
-        //case 2:
-        //  Serial.println(F("  v2->v3"));
-        //  preference.version = 3;
-        //  preferences(WRITE);
-        //  break;
-        default:
-          Serial.println(F("  -"));
-          break;
+        switch (preference.version) {
+          //case 1: {
+          //    Serial.println(F("  v1->v2"));
+          //    preference.version = 2;
+          //  }
+          //case 2: {
+          //    Serial.println(F("  v2->v3"));
+          //    preference.version = 3;
+          //    preferences(WRITE);
+          //    break;
+          //  }
+          default: {
+              Serial.println(F("  -"));
+              break;
+            }
+        }
+        break;
       }
-      break;
-    case RESET:
-      Serial.println(F("reset"));
-      preference.cookie = preferenceCookie;
-      preference.version = preferenceVersion;
-      preference.mp3StartVolume = mp3StartVolumeDefault;
-      preference.mp3MaxVolume = mp3MaxVolumeDefault;
-      preference.mp3MenuVolume = mp3MenuVolumeDefault;
-      preference.mp3Equalizer = mp3EqualizerDefault;
-      preference.shutdownMinutes = shutdownMinutesDefault;
-      memcpy(preference.irRemoteUserCodes, irRemoteUserCodesDefault, 14);
-      preferences(WRITE);
-      break;
-    case RESET_PROGRESS:
-      Serial.println(F("reset progress"));
-      for (uint16_t i = 1; i < 100; i++) {
-        EEPROM.update(i, 0);
+    case RESET: {
+        Serial.println(F("reset"));
+        preference.cookie = preferenceCookie;
+        preference.version = preferenceVersion;
+        preference.mp3StartVolume = mp3StartVolumeDefault;
+        preference.mp3MaxVolume = mp3MaxVolumeDefault;
+        preference.mp3MenuVolume = mp3MenuVolumeDefault;
+        preference.mp3Equalizer = mp3EqualizerDefault;
+        preference.shutdownMinutes = shutdownMinutesDefault;
+        memcpy(preference.irRemoteUserCodes, irRemoteUserCodesDefault, 14);
+        preferences(WRITE);
+        break;
+      }
+    case RESET_PROGRESS: {
+        Serial.println(F("reset progress"));
+        for (uint16_t i = 1; i < 100; i++) {
+          EEPROM.update(i, 0);
 #ifdef STATUSLED
-        statusLedBlink(50);
+          statusLedBlink(50);
 #endif
+        }
+        break;
       }
-      break;
-    default:
-      break;
+    default: {
+        break;
+      }
   }
 }
 
@@ -1617,8 +1733,7 @@ void parentsMenu() {
         }
         // wait for nfc tag, erase once detected
         if (mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial()) {
-          uint8_t bytesToWrite[16];
-          for (uint8_t i = 0; i < 16; i++) bytesToWrite[i] = 0x00;
+          uint8_t bytesToWrite[16] = {};
           writeNfcTagStatus = writeNfcTagData(bytesToWrite, sizeof(bytesToWrite));
           if (writeNfcTagStatus == 1) {
             mp3.playMp3FolderTrack(921);
@@ -1729,13 +1844,37 @@ void parentsMenu() {
       uint8_t promptResult = prompt(7, 960, 960, 0, 0, false, false);
       if (promptResult != 0) {
         switch (promptResult) {
-          case 1: preference.shutdownMinutes = 5; break;
-          case 2: preference.shutdownMinutes = 10; break;
-          case 3: preference.shutdownMinutes = 15; break;
-          case 4: preference.shutdownMinutes = 20; break;
-          case 5: preference.shutdownMinutes = 30; break;
-          case 6: preference.shutdownMinutes = 60; break;
-          case 7: preference.shutdownMinutes = 0; break;
+          case 1: {
+              preference.shutdownMinutes = 5;
+              break;
+            }
+          case 2: {
+              preference.shutdownMinutes = 10;
+              break;
+            }
+          case 3: {
+              preference.shutdownMinutes = 15;
+              break;
+            }
+          case 4: {
+              preference.shutdownMinutes = 20;
+              break;
+            }
+          case 5: {
+              preference.shutdownMinutes = 30;
+              break;
+            }
+          case 6: {
+              preference.shutdownMinutes = 60;
+              break;
+            }
+          case 7: {
+              preference.shutdownMinutes = 0;
+              break;
+            }
+          default: {
+              break;
+            }
         }
         preferences(WRITE);
         mp3.playMp3FolderTrack(901);
@@ -1791,7 +1930,7 @@ bool enterPinCode() {
   shutdownTimer(STOP);
 
   Serial.println(F("pin?"));
-  mp3.playMp3FolderTrack(808);
+  mp3.playMp3FolderTrack(810);
   while (true) {
     checkForInput();
     // map ir inputs to corresponding button inputs
@@ -1799,7 +1938,7 @@ bool enterPinCode() {
     // button 0 (middle) hold for 2 sec or ir remote menu: cancel
     if (inputEvent == B0H || inputEvent == IRM || millis() > cancelEnterPinCodeMillis) {
       Serial.println(F("cancel"));
-      mp3.playMp3FolderTrack(809);
+      mp3.playMp3FolderTrack(811);
       waitPlaybackToFinish(500);
 
       // restore playback volume, can't be higher than maximum volume
@@ -1831,7 +1970,7 @@ bool enterPinCode() {
       // we don't have a match, repeat
       else {
         Serial.println(F("pin?"));
-        mp3.playMp3FolderTrack(808);
+        mp3.playMp3FolderTrack(810);
         cancelEnterPinCodeMillis = millis() + enterPinCodeTimeout;
         pinCodeSlot = 0;
         pinCodeMatch = true;

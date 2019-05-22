@@ -1,19 +1,24 @@
 0800.mp3|Lets go!
 0801.mp3|A new card was found, please leave it on the box until its setup. Use the volume keys to pick a folder and confirm with the pause key. Hold the pause key to cancel.
 0802.mp3|Ok, single track. Use the volume keys to pick a track and confirm with the pause key. Hold the pause key to cancel.
-0803.mp3|Ok, the card is setup. Have fun.
-0804.mp3|An error occurred while setting up the card. Please try again.
-0805.mp3|Card setup canceled.
-0806.mp3|Oops my batteries died. Please ask mom or dad to swap them. Im powering down now, bye.
-0807.mp3|Reset completed.
-0808.mp3|Please enter PIN.
-0809.mp3|PIN entry canceled.
+0803.mp3|Ok. Use the volume keys to pick a start track for the virtual folder and confirm with the pause key. Hold the pause key to cancel.
+0804.mp3|Ok. Use the volume keys to pick an end track for the virtual folder and confirm with the pause key. Hold the pause key to cancel.
+0805.mp3|Ok, the card is setup. Have fun.
+0806.mp3|An error occurred while setting up the card. Please try again.
+0807.mp3|Card setup canceled.
+0808.mp3|Oops my batteries died. Please ask mom or dad to swap them. Im powering down now, bye.
+0809.mp3|Reset completed.
+0810.mp3|Please enter PIN.
+0811.mp3|PIN entry canceled.
 0820.mp3|Ok, use the volume keys to pick a playback mode and confirm with the pause key. Hold the pause key to cancel.
 0821.mp3|Story mode. Play one random track from the folder.
 0822.mp3|Album mode. Play the complete folder.
 0823.mp3|Party mode. Randomly play the complete folder.
 0824.mp3|Single mode. Play one particular track from the folder.
 0825.mp3|Audiobook mode. Play the complete folder and track the progress.
+0826.mp3|Virtual folder, story mode. Play one random track between start and end track.
+0827.mp3|Virtual folder, album mode. Play all tracks between start and end track.
+0828.mp3|Virtual folder, party mode. Randomly play the tracks between start track and end track.
 0900.mp3|Parents menu. Use the volume keys to pick an option and confirm with the pause key. Hold the pause key to cancel.
 0901.mp3|Preference saved.
 0902.mp3|Audiobook progress reset completed.

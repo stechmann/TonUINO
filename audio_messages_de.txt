@@ -1,19 +1,24 @@
 0800.mp3|Los gehts!
 0801.mp3|Eine neue Karte wurde erkannt. Bitte lasse die Karte auf der Box liegen, bis die Karte konfiguriert ist. Du kannst jetzt mit den Lautstärketasten einen Ordner auswählen und mit der Pausetaste bestätigen. Durch gedrückt halten der Pausetaste kannst du abbrechen.
 0802.mp3|Ok, Lieblingsfolge. Du kannst jetzt mit den Lautstärketasten eine Lieblingsfolge auswählen und mit der Pausetaste bestätigen. Durch gedrückt halten der Pausetaste kannst du abbrechen.
-0803.mp3|Ok, ich habe die Karte konfiguriert. Viel Spass damit.
-0804.mp3|Beim konfigurieren der Karte ist leider ein Fehler aufgetreten. Bitte versuche es noch einmal.
-0805.mp3|Karte konfigurieren abgebrochen.
-0806.mp3|Oh je, meine Batterie ist alle! Bitte Mama oder Papa, daß sie die Batterie tauschen. Ich schalte mich jetzt ab, bis bald.
-0807.mp3|Reset durchgeführt.
-0808.mp3|Bitte PIN eingeben.
-0809.mp3|PIN Eingabe abgebrochen.
+0803.mp3|Ok. Du kannst jetzt mit den Lautstärketasten eine Startdatei für den virtuellen Ordner auswählen und mit der Pausetaste bestätigen. Durch gedrückt halten der Pausetaste kannst du abbrechen.
+0804.mp3|Ok. Du kannst jetzt mit den Lautstärketasten eine Enddatei für den virtuellen Ordner auswählen und mit der Pausetaste bestätigen. Durch gedrückt halten der Pausetaste kannst du abbrechen.
+0805.mp3|Ok, ich habe die Karte konfiguriert. Viel Spass damit.
+0806.mp3|Beim konfigurieren der Karte ist leider ein Fehler aufgetreten. Bitte versuche es noch einmal.
+0807.mp3|Karte konfigurieren abgebrochen.
+0808.mp3|Oh je, meine Batterie ist alle! Bitte Mama oder Papa, daß sie die Batterie tauschen. Ich schalte mich jetzt ab, bis bald.
+0809.mp3|Reset durchgeführt.
+0810.mp3|Bitte PIN eingeben.
+0811.mp3|PIN Eingabe abgebrochen.
 0820.mp3|Ok. Du kannst jetzt mit den Lautstärketasten den Wiedergabemodus auswählen und mit der Pausetaste bestätigen. Durch gedrückt halten der Pausetaste kannst du abbrechen.
 0821.mp3|Hörspielmodus. Einen zufälligen Titel aus dem Ordner wiedergeben.
 0822.mp3|Albummodus. Den kompletten Ordner wiedergeben.
 0823.mp3|Partymodus. Den Ordner zufällig wiedergeben.
 0824.mp3|Lieblingsfolge. Einen bestimmten Titel aus dem Ordner wiedergeben.
 0825.mp3|Hörbuchmodus. Den kompletten Ordner wiedergeben und den Fortschritt speichern.
+0826.mp3|Virtueller Ordner, Hörspielmodus. Einen zufälligen Titel zwischen Start und Enddatei wiedergeben.
+0827.mp3|Virtueller Ordner, Albummodus. Alle Titel zwischen Start und Enddatei komplett wiedergeben.
+0828.mp3|Virtueller Ordner, Partymodus. Alle Titel zwischen Start und Enddatei zufällig wiedergeben.
 0900.mp3|Elternmenü. Du kannst jetzt mit den Lautstärketasten eine Option auswählen und mit der Pausetaste bestätigen. Durch gedrückt halten der Pausetaste kannst du abbrechen.
 0901.mp3|Einstellung gespeichert.
 0902.mp3|Fortschritte vom Hörbuchmodus zurückgesetzt.

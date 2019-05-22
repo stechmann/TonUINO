@@ -5,11 +5,29 @@ This is my alternative firmware for the wonderful [TonUINO](https://www.voss.ear
 
 **The firmware is provided "as-is". I'm happy if all this is useful for anyone else, but can't offer support.**
 
+## Table Of Contents
+- [Features](https://github.com/seisfeld/TonUINO/blob/master/docs/README_EN.md#features)
+- [Button Cheat Sheet](https://github.com/seisfeld/TonUINO/blob/master/docs/README_EN.md#button-cheat-sheet)
+- [PIN Code](https://github.com/seisfeld/TonUINO/blob/master/docs/README_EN.md#pin-code)
+- [SD Card Folder Structure](https://github.com/seisfeld/TonUINO/blob/master/docs/README_EN.md#sd-card-folder-structure)
+- [Audio Messages](https://github.com/seisfeld/TonUINO/blob/master/docs/README_EN.md#audio-messages)
+  - [Download the audio messages](https://github.com/seisfeld/TonUINO/blob/master/docs/README_EN.md#download-the-audio-messages)
+  - [Create the audio messages yourself](https://github.com/seisfeld/TonUINO/blob/master/docs/README_EN.md#create-the-audio-messages-yourself)
+      - [Create audio messages using say and ffmpeg](https://github.com/seisfeld/TonUINO/blob/master/docs/README_EN.md#create-audio-messages-using-say-and-ffmpeg)
+      - [Create audio messages using Amazon Polly](https://github.com/seisfeld/TonUINO/blob/master/docs/README_EN.md#create-audio-messages-using-amazon-polly)
+      - [Create audio messages using Googles text-to-speech service](https://github.com/seisfeld/TonUINO/blob/master/docs/README_EN.md#create-audio-messages-using-googles-text-to-speech-service)
+      - [Help and additional options](https://github.com/seisfeld/TonUINO/blob/master/docs/README_EN.md#help-and-additional-options)
+- [Add Lead-In Messages To mp3 Files](https://github.com/seisfeld/TonUINO/blob/master/docs/README_EN.md#add-lead-in-messages-to-mp3-files)
+  - [How it works](hhttps://github.com/seisfeld/TonUINO/blob/master/docs/README_EN.md#how-it-works)
+  - [Help and additional options](https://github.com/seisfeld/TonUINO/blob/master/docs/README_EN.md#help-and-additional-options-1)
+- [License](https://github.com/seisfeld/TonUINO/blob/master/docs/README_EN.md#license)
+
 ## Features
 
-- Playback modes: Story, album, party, single, story book.
+- Standard playback modes: Story, album, party, single, story book.
+- Advanced playback modes: Virtual folders for the modes story, album and party.
 - Saves playback modes etc. directly to the NFC tags/cards.
-- Next/previous track in album, party and story mode.
+- Next/previous track in standard modes album, party and story book mode - as well as when using virtual folders in album and party mode.
 - Supports MIFARE Classic (Mini, 1K & 4K) tags/cards.
 - Supports MIFARE Ultralight / Ultralight C tags/cards.
 - Supports NTAG213/215/216 tags/cards.
@@ -18,12 +36,12 @@ This is my alternative firmware for the wonderful [TonUINO](https://www.voss.ear
 - Setup dialogues (setup/erase NFC tags/cards, parents menu etc.) can be aborted.
 - NFC tags/cards can be erased.
 - Parents menu to erase NFC tags/cards and to change preferences like startup volume, maximum volume, menu volume, equalizer and shutdown timer (requires an external circuit or compatible power bank). You can also manually trigger the shutdown there and reset the story book progress and preferences.
-- Optional: PIN to protect parental functions.
-- Optional: 5 Buttons.
-- Optional: IR remote control (incl. box lock). The remote (which needs at least 7 keys) can be learned in using the parents menu.
-- Optional: Status LED.
-- Optional: Low voltage shutdown i.e. for the [CubieKid PCB](https://www.thingiverse.com/thing:3148200).
-- Optional: Pololu switch support.
+- **Optional:** PIN to protect parental functions.
+- **Optional:** 5 Buttons.
+- **Optional:** IR remote control (incl. box lock). The remote (which needs at least 7 keys) can be learned in using the parents menu.
+- **Optional:** Status LED.
+- **Optional:** Low voltage shutdown i.e. for the [CubieKid PCB](https://www.thingiverse.com/thing:3148200).
+- **Optional:** Pololu switch support.
 
 ## Button Cheat Sheet
 

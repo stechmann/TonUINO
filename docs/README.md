@@ -7,11 +7,29 @@ Dies ist meine alternative Firmware für das wundervolle [TonUINO](https://www.v
 
 **Die Firmware wird "as-is" zur Verfügung gestellt. Wenn jemand die Firmware in seinem TonUINO einsetzt, freue ich mich natürlich darüber. Ich kann allerdings keinen Support bieten.**
 
+## Inhalt
+- [Funktionsübersicht](https://github.com/seisfeld/TonUINO#funktionsübersicht)
+- [Tastenbelegung](https://github.com/seisfeld/TonUINO#tastenbelegung)
+- [PIN Code](https://github.com/seisfeld/TonUINO#pin-code)
+- [Ordnerstruktur auf der SD Karte](https://github.com/seisfeld/TonUINO#ordnerstruktur-auf-der-sd-karte)
+- [Audio Meldungen](https://github.com/seisfeld/TonUINO#audio-meldungen)
+  - [Audio Meldungen herunterladen](https://github.com/seisfeld/TonUINO#audio-meldungen-herunterladen)
+  - [Audio Meldungen selbst erzeugen](https://github.com/seisfeld/TonUINO#audio-meldungen-selbst-erzeugen)
+      - [Audio Meldungen mit say und ffmpeg erzeugen](https://github.com/seisfeld/TonUINO#audio-meldungen-mit-say-und-ffmpeg-erzeugen)
+      - [Audio Meldungen mit Amazon Polly erzeugen](https://github.com/seisfeld/TonUINO#audio-meldungen-mit-amazon-polly-erzeugen)
+      - [Audio Meldungen mit dem Cloud text-to-speech Service von Google erzeugen](https://github.com/seisfeld/TonUINO#audio-meldungen-mit-dem-cloud-text-to-speech-service-von-google-erzeugen)
+      - [Hilfe und weitere Optionen](https://github.com/seisfeld/TonUINO#hilfe-und-weitere-optionen)
+- [Titelansagen in MP3-Dateien einfügen](https://github.com/seisfeld/TonUINO#titelansagen-in-mp3-dateien-einfügen)
+  - [Funktionsweise](https://github.com/seisfeld/TonUINO#funktionsweise)
+  - [Hilfe und weitere Optionen](https://github.com/seisfeld/TonUINO#hilfe-und-weitere-optionen-1)
+- [Lizenz](https://github.com/seisfeld/TonUINO#lizenz)
+
 ## Funktionsübersicht
 
-- Abspielmodi: Hörspiel, Album, Party, Lieblingsfolge und Hörbuch.
+- Standard Abspielmodi: Hörspiel, Album, Party, Lieblingsfolge und Hörbuch.
+- Erweiterte Abspielmodi: Virtuelle Ordner für die Modi Hörspiel, Album und Party.
 - Speichert die Ordnerverknüpfungen, Abspielmodi etc. auf den NFC Tags/Karten.
-- Nächster/Vorheriger Titel in den Abspielmodi Album, Party und Hörbuch.
+- Nächster/Vorheriger Titel sowohl in den Standard Abspielmodi Album, Party und Hörbuch - als auch bei der Nutzung von virtuellen Ordnern in den Modi Album und Party.
 - Unterstützung für MIFARE Classic (Mini, 1K & 4K) Tags/Karten.
 - Unterstützung für MIFARE Ultralight / Ultralight C Tags/Karten.
 - Unterstützung für NTAG213/215/216 Tags/Karten.
@@ -20,12 +38,12 @@ Dies ist meine alternative Firmware für das wundervolle [TonUINO](https://www.v
 - Konfigurationsdialoge (NFC Tags/Karten anlernen/löschen, Elternmenü etc.) können abgebrochen werden.
 - NFC Tags/Karten können wieder komplett gelöscht werden.
 - Elternmenü um NFC Tags/Karten zu löschen und um Einstellungen wie Startlautstärke, Maximallautstärke, Menülautstärke, Equalizer und Abschalttimer (benötigt eine externe Schaltung oder eine passende Powerbank) vorzunehmen. Dort kann TonUINO auch von Hand abgeschaltet werden und es lassen sich der Hörbuchfortschritt und die Einstellugen zurücksetzen.
-- Optional: PIN Code um Elternfunktionen zu schützen.
-- Optional: Umstellbar auf 5 Tasten Bedienung.
-- Optional: Fernbedienbar über eine Infrarotfernbedienung (diese muss mindestens 7 Tasten haben), welche über das Elternmenü angelernt werden kann. Über die Fernbedienung ist es dann auch möglich die Tasten von TonUINO zu sperren.
-- Optional: Unterstützung einer Status LED.
-- Optional: Unterspannungsabschaltung für z.B. die [CubieKid Platine](https://www.thingiverse.com/thing:3148200).
-- Optional: Unterstützung des Pololu Switch.
+- **Optional:** PIN Code um Elternfunktionen zu schützen.
+- **Optional:** Umstellbar auf 5 Tasten Bedienung.
+- **Optional:** Fernbedienbar über eine Infrarotfernbedienung (diese muss mindestens 7 Tasten haben), welche über das Elternmenü angelernt werden kann. Über die Fernbedienung ist es dann auch möglich die Tasten von TonUINO zu sperren.
+- **Optional:** Unterstützung einer Status LED.
+- **Optional:** Unterspannungsabschaltung für z.B. die [CubieKid Platine](https://www.thingiverse.com/thing:3148200).
+- **Optional:** Unterstützung des Pololu Switch.
 
 ## Tastenbelegung
 
@@ -35,7 +53,7 @@ Dies ist meine alternative Firmware für das wundervolle [TonUINO](https://www.v
 
 Der (optional einschaltbare) PIN Code um die Elternfunktionen abzusichern lautet standard mässig
 
-* `play/pause, vol-, vol+, play/pause`
+- `play/pause, vol-, vol+, play/pause`
 
 und kann im Sketch vor dem kompilieren geändert werden.
 
