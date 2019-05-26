@@ -26,8 +26,9 @@ This is my alternative firmware for the wonderful [TonUINO](https://www.voss.ear
 
 - Standard playback modes: Story, album, party, single, story book.
 - Advanced playback modes: Virtual folders for the modes story, album and party.
-- Saves playback modes etc. directly to the NFC tags/cards.
 - Next/previous track in standard modes album, party and story book mode - as well as when using virtual folders in album and party mode.
+- The currently playing track can be repeated indefinitely.
+- Saves playback modes etc. directly to the NFC tags/cards.
 - Supports MIFARE Classic (Mini, 1K & 4K) tags/cards.
 - Supports MIFARE Ultralight / Ultralight C tags/cards.
 - Supports NTAG213/215/216 tags/cards.
@@ -41,7 +42,7 @@ This is my alternative firmware for the wonderful [TonUINO](https://www.voss.ear
 - **Optional:** IR remote control (incl. box lock). The remote (which needs at least 7 keys) can be learned in using the parents menu.
 - **Optional:** Status LED.
 - **Optional:** Low voltage shutdown i.e. for the [CubieKid PCB](https://www.thingiverse.com/thing:3148200).
-- **Optional:** Pololu switch support.
+- **Optional:** [Pololu Power Switch (LV)](https://www.pololu.com/product/2808) support.
 
 ## Button Cheat Sheet
 

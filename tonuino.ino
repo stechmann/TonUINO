@@ -327,6 +327,7 @@ struct playbackStruct {
   bool isLocked = false;
   bool isPlaying = false;
   bool isFresh = true;
+  bool isRepeat = false;
   bool playListMode = false;
   uint8_t mp3CurrentVolume = 0;
   uint8_t folderStartTrack = 0;
@@ -738,6 +739,7 @@ void loop() {
         }
 
         playback.isFresh = true;
+        playback.isRepeat = false;
         playback.playListMode = true;
         printModeFolderTrack(true);
         mp3.playFolderTrack(playback.currentTag.folder, playback.playList[playback.playListItem - 1]);
@@ -904,6 +906,15 @@ void loop() {
   else if ((((inputEvent == B2H || inputEvent == B3P) && !playback.isLocked) || inputEvent == IRL) && (playback.currentTag.mode == ALBUM || playback.currentTag.mode == PARTY || playback.currentTag.mode == STORYBOOK || playback.currentTag.mode == VALBUM || playback.currentTag.mode == VPARTY) && playback.isPlaying) {
     Serial.println(F("prev"));
     playNextTrack(0, false, true);
+  }
+  // button 0 (middle) hold for 5 sec or ir remote menu, only during (v)story, (v)album, (v)party and single mode while playing: toggle single track repeat
+  else if (((inputEvent == B0H && !playback.isLocked) || inputEvent == IRM) && (playback.currentTag.mode == STORY || playback.currentTag.mode == ALBUM || playback.currentTag.mode == PARTY || playback.currentTag.mode == SINGLE || playback.currentTag.mode == VSTORY || playback.currentTag.mode == VALBUM || playback.currentTag.mode == VPARTY) && playback.isPlaying) {
+    Serial.print(F("repeat "));
+    if (playback.isRepeat = !playback.isRepeat) Serial.println(F("on"));
+    else Serial.println(F("off"));
+#ifdef STATUSLED
+    statusLedBurst();
+#endif
   }
   // button 0 (middle) hold for 5 sec or ir remote menu, only during story book mode while playing: reset progress
   else if (((inputEvent == B0H && !playback.isLocked) || inputEvent == IRM) && playback.currentTag.mode == STORYBOOK && playback.isPlaying) {
@@ -1213,12 +1224,19 @@ void playNextTrack(uint16_t globalTrack, bool directionForward, bool triggeredMa
   // vstory mode (6): play one random track in virtual folder
   // there is no next track in story, single and vstory mode, stop playback
   if (playback.currentTag.mode == STORY || playback.currentTag.mode == SINGLE || playback.currentTag.mode == VSTORY) {
-    playback.playListMode = false;
-    switchButtonConfiguration(PAUSE);
-    shutdownTimer(START);
-    Serial.print(playbackModeName[playback.currentTag.mode]);
-    Serial.println(F("-stop"));
-    mp3.stop();
+    if (playback.isRepeat) {
+      lastCallTrack = 0;
+      printModeFolderTrack(true);
+      mp3.playFolderTrack(playback.currentTag.folder, playback.playList[playback.playListItem - 1]);
+    }
+    else {
+      playback.playListMode = false;
+      switchButtonConfiguration(PAUSE);
+      shutdownTimer(START);
+      Serial.print(playbackModeName[playback.currentTag.mode]);
+      Serial.println(F("-stop"));
+      mp3.stop();
+    }
   }
 
   // album mode (2): play the complete folder
@@ -1241,8 +1259,14 @@ void playNextTrack(uint16_t globalTrack, bool directionForward, bool triggeredMa
 
     // play next track?
     if (directionForward) {
+      // single track repeat is on, repeat current track
+      if (playback.isRepeat && !triggeredManually) {
+        lastCallTrack = 0;
+        printModeFolderTrack(true);
+        mp3.playFolderTrack(playback.currentTag.folder, playback.playList[playback.playListItem - 1]);
+      }
       // there are more tracks after the current one, play next track
-      if (playback.playListItem < playback.playListItemCount) {
+      else if (playback.playListItem < playback.playListItemCount) {
         playback.playListItem++;
         printModeFolderTrack(true);
         mp3.playFolderTrack(playback.currentTag.folder, playback.playList[playback.playListItem - 1]);

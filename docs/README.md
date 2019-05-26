@@ -28,8 +28,9 @@ Dies ist meine alternative Firmware für das wundervolle [TonUINO](https://www.v
 
 - Standard Abspielmodi: Hörspiel, Album, Party, Lieblingsfolge und Hörbuch.
 - Erweiterte Abspielmodi: Virtuelle Ordner für die Modi Hörspiel, Album und Party.
-- Speichert die Ordnerverknüpfungen, Abspielmodi etc. auf den NFC Tags/Karten.
 - Nächster/Vorheriger Titel sowohl in den Standard Abspielmodi Album, Party und Hörbuch - als auch bei der Nutzung von virtuellen Ordnern in den Modi Album und Party.
+- Der aktuell laufende Titel kann dauerhaft wiederholt werden.
+- Speichert die Ordnerverknüpfungen, Abspielmodi etc. auf den NFC Tags/Karten.
 - Unterstützung für MIFARE Classic (Mini, 1K & 4K) Tags/Karten.
 - Unterstützung für MIFARE Ultralight / Ultralight C Tags/Karten.
 - Unterstützung für NTAG213/215/216 Tags/Karten.
@@ -43,7 +44,7 @@ Dies ist meine alternative Firmware für das wundervolle [TonUINO](https://www.v
 - **Optional:** Fernbedienbar über eine Infrarotfernbedienung (diese muss mindestens 7 Tasten haben), welche über das Elternmenü angelernt werden kann. Über die Fernbedienung ist es dann auch möglich die Tasten von TonUINO zu sperren.
 - **Optional:** Unterstützung einer Status LED.
 - **Optional:** Unterspannungsabschaltung für z.B. die [CubieKid Platine](https://www.thingiverse.com/thing:3148200).
-- **Optional:** Unterstützung des Pololu Switch.
+- **Optional:** Unterstützung des [Pololu Power Switch (LV)](https://www.pololu.com/product/2808).
 
 ## Tastenbelegung
 
