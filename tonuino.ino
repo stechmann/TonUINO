@@ -18,6 +18,7 @@
   During playback:
   ----------------
   Hold B0 for 5 seconds - Reset progress to track 1 (story book mode)
+  Hold B0 for 5 seconds - Single track repeat (all modes, except story book mode)
   Hold B1 for 2 seconds - Skip to the next track ((v)album, (v)party and story book mode)
   Hold B2 for 2 seconds - Skip to the previous track ((v)album, (v)party and story book mode)
 
@@ -75,6 +76,7 @@
   up / down - volume up / down
   left / right - previous / next track ((v)album, (v)party and story book mode)
   menu - reset progress to track 1 (story book mode)
+  menu - single track repeat (all modes, except story book mode)
 
   During parents menu:
   --------------------
