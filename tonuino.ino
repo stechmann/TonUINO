@@ -482,10 +482,10 @@ Vcc shutdownVoltage(shutdownVoltageCorrection);                               //
 void setup() {
   // things we need to do immediately on startup
   pinMode(shutdownPin, OUTPUT);
-#ifndef POLOLUSWITCH
-  digitalWrite(shutdownPin, HIGH);
-#else
+#ifdef POLOLUSWITCH
   digitalWrite(shutdownPin, LOW);
+#else
+  digitalWrite(shutdownPin, HIGH);
 #endif
   magicCookie = (uint32_t)magicCookieHex[0] << 24;
   magicCookie += (uint32_t)magicCookieHex[1] << 16;
@@ -625,12 +625,7 @@ void loop() {
     if (playback.currentTag.mode == STORYBOOK) EEPROM.update(playback.currentTag.folder, playback.playList[playback.playListItem - 1]);
     mp3.playMp3FolderTrack(808);
     waitPlaybackToFinish(50);
-    Serial.println(F("lv shut"));
-#ifndef POLOLUSWITCH
-    digitalWrite(shutdownPin, LOW);
-#else
-    digitalWrite(shutdownPin, HIGH);
-#endif
+    shutdownTimer(SHUTDOWN);
   }
   else if (shutdownVoltage.Read_Volts() <= shutdownWarnVoltage) {
 #ifdef STATUSLED
@@ -1533,7 +1528,6 @@ void shutdownTimer(uint8_t timerAction) {
       }
     case CHECK: {
         if (shutdownMillis != 0 && millis() > shutdownMillis) {
-          Serial.println(F("idle shut"));
           shutdownTimer(SHUTDOWN);
         }
         break;
@@ -1542,10 +1536,10 @@ void shutdownTimer(uint8_t timerAction) {
 #ifdef STATUSLED
         digitalWrite(statusLedPin, LOW);
 #endif
-#ifndef POLOLUSWITCH
-        digitalWrite(shutdownPin, LOW);
-#else
+#ifdef POLOLUSWITCH
         digitalWrite(shutdownPin, HIGH);
+#else
+        digitalWrite(shutdownPin, LOW);
 #endif
         mfrc522.PCD_AntennaOff();
         mfrc522.PCD_SoftPowerDown();
