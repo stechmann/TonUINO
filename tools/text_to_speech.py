@@ -98,7 +98,7 @@ def postJson(url, postBody, headers = None):
             cmd.extend(['-H', header])
     cmd.extend(['-H', 'Content-Type: application/json; charset=utf-8', '--data', json.dumps(postBody).encode('utf-8'), url])
     response = subprocess.check_output(cmd)
-    return json.loads(response)
+    return json.loads(response.decode('utf-8'))
 
 
 def postForm(url, formData):
