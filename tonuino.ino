@@ -27,6 +27,8 @@
   Click B0 - Confirm selection
   Click B1 - Next option
   Click B2 - Previous option
+  Click B3 - Jump 10 options backwards
+  Click B4 - Jump 10 options forward
   Double click B0 - Announce current option
   Hold B0 for 2 seconds - Cancel parents menu or any submenu
   Hold B1 for 2 seconds - Jump 10 options forward
@@ -37,6 +39,8 @@
   Click B0 - Confirm selection
   Click B1 - Next folder, mode or track
   Click B2 - Previous folder, mode or track
+  Click B3 - Jump 10 folders or tracks backwards
+  Click B4 - Jump 10 folders or tracks forward
   Double click B0 - Announce current folder, mode or track number
   Hold B0 for 2 seconds - Cancel nfc tag setup mode
   Hold B1 for 2 seconds - Jump 10 folders or tracks forward
@@ -1764,14 +1768,14 @@ uint8_t prompt(uint8_t promptOptions, uint16_t promptHeading, uint16_t promptOff
       return 0;
     }
     // button 1 (right) hold or ir remote right: jump 10 folders, tracks or options forward
-    else if (inputEvent == B1H || inputEvent == IRR) {
+    else if (inputEvent == B1H || inputEvent == B4P || inputEvent == IRR) {
       promptResult = min(promptResult + 10, promptOptions);
       Serial.println(promptResult);
       if (promptChangeVolume) mp3.setVolume(promptResult + promptOffset);
       mp3.playMp3FolderTrack(promptResult + promptOffset);
     }
     // button 2 (left) hold or ir remote left: jump 10 folders, tracks or options backwards
-    else if (inputEvent == B2H || inputEvent == IRL) {
+    else if (inputEvent == B2H || inputEvent == B3P || inputEvent == IRL) {
       promptResult = max(promptResult - 10, 1);
       Serial.println(promptResult);
       if (promptChangeVolume) mp3.setVolume(promptResult + promptOffset);
@@ -2084,6 +2088,7 @@ bool enterPinCode() {
 #endif
 
 #if defined STATUSLED ^ defined STATUSLEDRGB
+// updates status led(s) with various pulse, blink or burst patterns
 void statusLedUpdate(uint8_t statusLedAction, uint8_t red, uint8_t green, uint8_t blue, uint16_t statusLedUpdateInterval) {
   static bool statusLedState = true;
   static bool statusLedDirection = false;
@@ -2147,6 +2152,7 @@ void statusLedUpdate(uint8_t statusLedAction, uint8_t red, uint8_t green, uint8_
   }
 }
 
+// abstracts status led(s) depending on what hardware is actually used (vanilla or ws281x led(s))
 void statusLedUpdateHal(uint8_t red, uint8_t green, uint8_t blue, int16_t brightness) {
 #if defined STATUSLEDRGB
   cRGB rgbLedColor;
