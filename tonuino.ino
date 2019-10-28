@@ -285,7 +285,7 @@ enum {START, STOP, CHECK, SHUTDOWN};
 enum {READ, WRITE, MIGRATE, RESET, RESET_PROGRESS};
 
 // status led actions
-enum {SOLID, PULSE, BLINK, BURST4, BURST8};
+enum {OFF, SOLID, PULSE, BLINK, BURST4, BURST8};
 
 // define general configuration constants
 const uint8_t mp3SerialTxPin = 3;                   // mp3 serial tx, wired with 1k ohm to rx pin of DFPlayer Mini
@@ -1614,7 +1614,7 @@ void shutdownTimer(uint8_t timerAction) {
       }
     case SHUTDOWN: {
 #if defined STATUSLED ^ defined STATUSLEDRGB
-        statusLedUpdate(SOLID, 0, 0, 0, 0);
+        statusLedUpdate(OFF, 0, 0, 0, 0);
 #endif
 #if defined POLOLUSWITCH
         digitalWrite(shutdownPin, HIGH);
@@ -2098,6 +2098,10 @@ void statusLedUpdate(uint8_t statusLedAction, uint8_t red, uint8_t green, uint8_
   if (millis() - statusLedOldMillis >= statusLedUpdateInterval) {
     statusLedOldMillis = millis();
     switch (statusLedAction) {
+      case OFF: {
+          statusLedUpdateHal(red, green, blue, 0);
+          break;
+      }
       case SOLID: {
           statusLedFade = 255;
           statusLedUpdateHal(red, green, blue, 255);
