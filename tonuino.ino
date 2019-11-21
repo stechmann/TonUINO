@@ -1257,6 +1257,7 @@ void waitPlaybackToFinish(uint8_t red, uint8_t green, uint8_t blue, uint16_t sta
 #if defined STATUSLED ^ defined STATUSLEDRGB
     statusLedUpdate(BLINK, red, green, blue, statusLedUpdateInterval);
 #endif
+    mp3.loop();
   }
 }
 
