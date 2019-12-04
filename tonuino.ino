@@ -1291,8 +1291,8 @@ void printModeFolderTrack(bool cr) {
 void playNextTrack(uint16_t globalTrack, bool directionForward, bool triggeredManually) {
   static uint16_t lastCallTrack = 0;
 
-  //delay 500ms to be on the safe side with the serial communication
-  delay(500);
+  //delay 100ms to be on the safe side with the serial communication
+  delay(100);
 
   // we only advance to a new track when in playlist mode, not during interactive prompt playback (ie. during configuration of a new nfc tag)
   if (!playback.playListMode) return;
