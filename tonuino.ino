@@ -135,11 +135,11 @@
 
      - Pulse slowly white when TonUINO is idle.
      - Solid green when TonUINO is playing a title.
-     - Blink blue every 500ms when interactive in menus etc.
+     - Blink yellow every 500ms when interactive in menus etc.
      - Blink red every 100ms if the LOWVOLTAGE feature is active and the battery is low.
      - Burst 4 times red when TonUINO is locked and 8 times green when unlocked.
-     - Burst 4 times pink when repeat is activated and 8 times pink when deactivated.
-     - Burst 8 times yellow when the track in story book mode is reset to 1.
+     - Burst 4 times white when repeat is activated and 8 times white when deactivated.
+     - Burst 8 times magenta when the track in story book mode is reset to 1.
 
      There are some more signals, they try to be intuitive. You'll see.
 
@@ -980,13 +980,13 @@ void loop() {
     if ((playback.isRepeat = !playback.isRepeat)) {
       Serial.println(F("on"));
 #if defined STATUSLED ^ defined STATUSLEDRGB
-      statusLedUpdate(BURST4, 255, 0, 255, 0);
+      statusLedUpdate(BURST4, 255, 255, 255, 0);
 #endif
     }
     else {
       Serial.println(F("off"));
 #if defined STATUSLED ^ defined STATUSLEDRGB
-      statusLedUpdate(BURST8, 255, 0, 255, 0);
+      statusLedUpdate(BURST8, 255, 255, 255, 0);
 #endif
     }
   }
@@ -998,7 +998,7 @@ void loop() {
     EEPROM.update(playback.currentTag.folder, 0);
     mp3.playFolderTrack(playback.currentTag.folder, playback.playList[playback.playListItem - 1]);
 #if defined STATUSLED ^ defined STATUSLEDRGB
-    statusLedUpdate(BURST8, 255, 255, 0, 0);
+    statusLedUpdate(BURST8, 255, 0, 255, 0);
 #endif
   }
   // button 0 (middle) hold for 5 sec or ir remote menu while not playing: parents menu
@@ -1783,7 +1783,7 @@ uint8_t prompt(uint8_t promptOptions, uint16_t promptHeading, uint16_t promptOff
       mp3.playMp3FolderTrack(promptResult + promptOffset);
     }
 #if defined STATUSLED ^ defined STATUSLEDRGB
-    statusLedUpdate(BLINK, 0, 0, 255, 500);
+    statusLedUpdate(BLINK, 255, 255, 0, 500);
 #endif
     mp3.loop();
   }
@@ -1809,7 +1809,7 @@ void parentsMenu() {
     // cancel
     if (selectedOption == 0) {
       mp3.playMp3FolderTrack(904);
-      waitPlaybackToFinish(0, 255, 0, 100);
+      waitPlaybackToFinish(255, 255, 0, 100);
       break;
     }
     // erase tag
@@ -1838,7 +1838,7 @@ void parentsMenu() {
           else mp3.playMp3FolderTrack(922);
         }
 #if defined STATUSLED ^ defined STATUSLEDRGB
-        statusLedUpdate(BLINK, 255, 255, 0, 500);
+        statusLedUpdate(BLINK, 255, 0, 255, 500);
 #endif
         mp3.loop();
       }
