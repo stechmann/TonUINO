@@ -285,7 +285,7 @@ enum {START, STOP, CHECK, SHUTDOWN};
 enum {READ, WRITE, MIGRATE, RESET, RESET_PROGRESS};
 
 // status led actions
-enum {OFF, SOLID, PULSE, BLINK, BURST4, BURST8};
+enum {OFF, SOLID, PULSE, BLINK, BURST2, BURST4, BURST8};
 
 // define general configuration constants
 const uint8_t mp3SerialTxPin = 3;                   // mp3 serial tx, wired with 1k ohm to rx pin of DFPlayer Mini
@@ -1365,6 +1365,9 @@ void playNextTrack(uint16_t globalTrack, bool directionForward, bool triggeredMa
           Serial.println();
           mp3.stop();
         }
+#if defined STATUSLED
+        else statusLedUpdate(BURST2, 255, 0, 0, 0);
+#endif
       }
     }
     // play previous track?
@@ -1375,6 +1378,9 @@ void playNextTrack(uint16_t globalTrack, bool directionForward, bool triggeredMa
         printModeFolderTrack(true);
         mp3.playFolderTrack(playback.currentTag.folder, playback.playList[playback.playListItem - 1]);
       }
+#if defined STATUSLED
+      else statusLedUpdate(BURST2, 255, 0, 0, 0);
+#endif
     }
   }
 }
@@ -2130,6 +2136,15 @@ void statusLedUpdate(uint8_t statusLedAction, uint8_t red, uint8_t green, uint8_
           statusLedState = !statusLedState;
           if (statusLedState) statusLedUpdateHal(red, green, blue, 255);
           else statusLedUpdateHal(0, 0, 0, 0);
+          break;
+        }
+      case BURST2: {
+          for (uint8_t i = 0; i < 4; i++) {
+            statusLedState = !statusLedState;
+            if (statusLedState) statusLedUpdateHal(red, green, blue, 255);
+            else statusLedUpdateHal(0, 0, 0, 0);
+            delay(100);
+          }
           break;
         }
       case BURST4: {
