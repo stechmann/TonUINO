@@ -133,7 +133,7 @@
      the '#define STATUSLEDRGB' below. TonUINO will signal various status information
      in different patterns and colors, for example:
 
-     - Pulse slowly white when TonUINO is idle.
+     - Pulse slowly green when TonUINO is idle.
      - Solid green when TonUINO is playing a title.
      - Blink yellow every 500ms when interactive in menus etc.
      - Blink red every 100ms if the LOWVOLTAGE feature is active and the battery is low.
@@ -700,13 +700,13 @@ void loop() {
   else {
 #if defined STATUSLED ^ defined STATUSLEDRGB
     if (playback.isPlaying) statusLedUpdate(SOLID, 0, 255, 0, 100);
-    else statusLedUpdate(PULSE, 255, 255, 255, 100);
+    else statusLedUpdate(PULSE, 0, 255, 0, 100);
 #endif
   }
 #else
 #if defined STATUSLED ^ defined STATUSLEDRGB
   if (playback.isPlaying) statusLedUpdate(SOLID, 0, 255, 0, 100);
-  else statusLedUpdate(PULSE, 255, 255, 255, 100);
+  else statusLedUpdate(PULSE, 0, 255, 0, 100);
 #endif
 #endif
 
