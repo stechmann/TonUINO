@@ -1291,11 +1291,11 @@ void printModeFolderTrack(bool cr) {
 void playNextTrack(uint16_t globalTrack, bool directionForward, bool triggeredManually) {
   static uint16_t lastCallTrack = 0;
 
-  //delay 100ms to be on the safe side with the serial communication
-  delay(100);
-
   // we only advance to a new track when in playlist mode, not during interactive prompt playback (ie. during configuration of a new nfc tag)
   if (!playback.playListMode) return;
+
+  //delay 100ms to be on the safe side with the serial communication
+  delay(100);
 
   // story mode (1): play one random track in folder
   // single mode (4): play one single track in folder
