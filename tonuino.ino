@@ -955,14 +955,20 @@ void loop() {
       Serial.print(F("volume "));
       Serial.println(playback.mp3CurrentVolume);
     }
+#if defined STATUSLED
+    else statusLedUpdate(BURST2, 255, 0, 0, 0);
+#endif
   }
   // button 2 (left) press or ir remote down while playing: decrease volume
   else if (((inputEvent == B2P && !playback.isLocked) || inputEvent == IRD) && playback.isPlaying) {
-    if (playback.mp3CurrentVolume > 0) {
+    if (playback.mp3CurrentVolume > 1) {
       mp3.setVolume(--playback.mp3CurrentVolume);
       Serial.print(F("volume "));
       Serial.println(playback.mp3CurrentVolume);
     }
+#if defined STATUSLED
+    else statusLedUpdate(BURST2, 255, 0, 0, 0);
+#endif
   }
   // button 1 (right) hold for 2 sec or button 5 press or ir remote right, only during (v)album, (v)party and story book mode while playing: next track
   else if ((((inputEvent == B1H || inputEvent == B4P) && !playback.isLocked) || inputEvent == IRR) && (playback.currentTag.mode == ALBUM || playback.currentTag.mode == PARTY || playback.currentTag.mode == STORYBOOK || playback.currentTag.mode == VALBUM || playback.currentTag.mode == VPARTY) && playback.isPlaying) {
