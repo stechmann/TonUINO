@@ -2093,7 +2093,7 @@ bool enterPinCode() {
       }
     }
 #if defined STATUSLED ^ defined STATUSLEDRGB
-    statusLedUpdate(BLINK, 0, 0, 255, 500);
+    statusLedUpdate(BLINK, 255, 255, 0, 500);
 #endif
     mp3.loop();
   }
