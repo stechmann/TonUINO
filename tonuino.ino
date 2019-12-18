@@ -268,7 +268,7 @@ using namespace ace_button;
 enum {NOMODE, STORY, ALBUM, PARTY, SINGLE, STORYBOOK, VSTORY, VALBUM, VPARTY};
 
 // button actions
-enum {NOACTION,
+enum {NOP,
       B0P, B1P, B2P, B3P, B4P,
       B0H, B1H, B2H, B3H, B4H,
       B0D, B1D, B2D, B3D, B4D,
@@ -324,7 +324,7 @@ const uint8_t magicCookieHex[4] = {0x13, 0x37, 0xb3, 0x47};
 // define pin code, allowed enums for pinCode[]: B0P, B1P, B2P (plus B3P & B4P if FIVEBUTTONS is enabled)
 const uint8_t pinCode[] = {B0P, B2P, B1P, B0P};     // for example play/pause, vol-, vol+, play/pause
 const uint8_t pinCodeLength = sizeof(pinCode);
-const uint8_t pinCodeIrToButtonMapping[] = {B1P, B2P, B3P, B4P, NOACTION, IRM, B0P};
+const uint8_t pinCodeIrToButtonMapping[] = {B1P, B2P, B3P, B4P, NOP, IRM, B0P};
 const uint64_t enterPinCodeTimeout = 10000;         // time to enter the pin code (in milliseconds)
 #endif
 
@@ -407,7 +407,7 @@ struct preferenceStruct {
 };
 
 // global variables
-uint8_t inputEvent = NOACTION;
+uint8_t inputEvent = NOP;
 uint32_t magicCookie = 0;
 uint32_t preferenceCookie = 0;
 playbackStruct playback;
@@ -897,7 +897,7 @@ void loop() {
 
         switchButtonConfiguration(PAUSE);
         shutdownTimer(START);
-        inputEvent = NOACTION;
+        inputEvent = NOP;
       }
       // # end - nfc tag does not have our magic cookie on it
       // ####################################################
@@ -1025,7 +1025,7 @@ void loop() {
 // checks all input sources (and populates the global inputEvent variable for ir events)
 void checkForInput() {
   // clear inputEvent
-  inputEvent = NOACTION;
+  inputEvent = NOP;
 
   // check all buttons
   button0.check();
@@ -1037,7 +1037,7 @@ void checkForInput() {
 #endif
 
 #if defined IRREMOTE
-  uint8_t irRemoteEvent = NOACTION;
+  uint8_t irRemoteEvent = NOP;
   uint16_t irRemoteCode = 0;
   static uint64_t irRemoteOldMillis;
 
@@ -2024,7 +2024,7 @@ void parentsMenu() {
 
   switchButtonConfiguration(PAUSE);
   shutdownTimer(START);
-  inputEvent = NOACTION;
+  inputEvent = NOP;
 }
 
 #if defined PINCODE
@@ -2059,12 +2059,12 @@ bool enterPinCode() {
 
       switchButtonConfiguration(PAUSE);
       shutdownTimer(START);
-      inputEvent = NOACTION;
+      inputEvent = NOP;
 
       return false;
     }
     // record inputs
-    if (inputEvent != NOACTION) pinCodeEntered[pinCodeSlot++] = inputEvent;
+    if (inputEvent != NOP) pinCodeEntered[pinCodeSlot++] = inputEvent;
     // if the complete pin code has been recorded
     if (pinCodeSlot == pinCodeLength) {
       // compare entered with stored pin code
@@ -2076,7 +2076,7 @@ bool enterPinCode() {
 
         switchButtonConfiguration(PAUSE);
         shutdownTimer(START);
-        inputEvent = NOACTION;
+        inputEvent = NOP;
 
         return true;
       }
