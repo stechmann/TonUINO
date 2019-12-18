@@ -2,7 +2,7 @@
   basic button actions:
   =====================
 
-  Button B0 (by default pin A0, middle button on the original TonUINO): play+pause
+  Button B0 (by default pin A0, middle button on the original TonUINO): play/pause
   Button B1 (by default pin A1, right button on the original TonUINO): volume up
   Button B2 (by default pin A2, left button on the original TonUINO): volume down
   Button B3 (by default pin A3, optional): previous track
@@ -76,7 +76,7 @@
   During playback:
   ----------------
   center - toggle box lock
-  play+pause - toggle playback
+  play/pause - toggle playback
   up / down - volume up / down
   left / right - previous / next track ((v)album, (v)party and story book mode)
   menu - reset progress to track 1 (story book mode)
@@ -85,7 +85,7 @@
   During parents menu:
   --------------------
   center - announce current option
-  play+pause - confirm selection
+  play/pause - confirm selection
   up / down - next / previous option
   left / right - jump 10 options backwards / forward
   menu - cancel
@@ -93,7 +93,7 @@
   During nfc tag setup mode:
   --------------------------
   center - announce current folder, mode or track number
-  play+pause - confirm selection
+  play/pause - confirm selection
   up / down - next / previous folder, mode or track
   left / right - jump 10 folders or tracks backwards / forward
   menu - cancel
@@ -288,8 +288,8 @@ enum {READ, WRITE, MIGRATE, RESET, RESET_PROGRESS};
 enum {OFF, SOLID, PULSE, BLINK, BURST2, BURST4, BURST8};
 
 // define general configuration constants
-const uint8_t mp3SerialTxPin = 3;                   // mp3 serial tx, wired with 1k ohm to rx pin of DFPlayer Mini
-const uint8_t mp3SerialRxPin = 2;                   // mp3 serial rx, wired straight to tx pin of DFPlayer Mini
+const uint8_t mp3SerialRxPin = 2;                   // mp3 serial rx, wired to tx pin of DFPlayer Mini
+const uint8_t mp3SerialTxPin = 3;                   // mp3 serial tx, wired to rx pin of DFPlayer Mini
 const uint8_t mp3BusyPin = 4;                       // reports play state of DFPlayer Mini (LOW = playing)
 #if defined IRREMOTE
 const uint8_t irReceiverPin = 5;                    // pin used for the ir receiver
@@ -309,9 +309,9 @@ const uint8_t button2Pin = A2;                      // left button
 const uint8_t button3Pin = A3;                      // optional 4th button
 const uint8_t button4Pin = A4;                      // optional 5th button
 #endif
-const uint16_t buttonClickDelay = 1000;             // time during which a button click is still a click (in milliseconds)
+const uint16_t buttonClickDelay = 1000;             // time during which a button press is still a click (in milliseconds)
 const uint16_t buttonShortLongPressDelay = 2000;    // time after which a button press is considered a long press (in milliseconds)
-const uint16_t buttonLongLongPressDelay = 5000;     // longer long press delay for special cases, i.e. to trigger erase nfc tag mode (in milliseconds)
+const uint16_t buttonLongLongPressDelay = 5000;     // longer long press delay for special cases, i.e. to trigger the parents menu (in milliseconds)
 const uint32_t debugConsoleSpeed = 9600;            // speed for the debug console
 
 // number of mp3 files in advert folder + number of mp3 files in mp3 folder
@@ -925,7 +925,7 @@ void loop() {
 #endif
     }
   }
-  // button 0 (middle) press or ir remote play+pause: toggle playback
+  // button 0 (middle) press or ir remote play/pause: toggle playback
   else if ((inputEvent == B0P && !playback.isLocked) || inputEvent == IRP) {
     if (playback.isPlaying) {
       switchButtonConfiguration(PAUSE);
@@ -1022,7 +1022,7 @@ void loop() {
 // ################################################################ functions are below this line! ################################################################
 // ################################################################################################################################################################
 
-// checks all input sources and populates the global inputEvent variable
+// checks all input sources (and populates the global inputEvent variable for ir events)
 void checkForInput() {
   // clear inputEvent
   inputEvent = NOACTION;
@@ -1070,7 +1070,7 @@ void checkForInput() {
 #endif
 }
 
-// translates the various button events into enums
+// translates the various button events into enums and populates the global inputEvent variable
 void translateButtonInput(AceButton *button, uint8_t eventType, uint8_t /* buttonState */) {
   switch (button->getId()) {
     // button 0 (middle)
@@ -1729,7 +1729,7 @@ uint8_t prompt(uint8_t promptOptions, uint16_t promptHeading, uint16_t promptOff
         return (uint8_t)promptResultSerial;
       }
     }
-    // button 0 (middle) press or ir remote play+pause: confirm selection
+    // button 0 (middle) press or ir remote play/pause: confirm selection
     if ((inputEvent == B0P || inputEvent == IRP) && promptResult != 0) {
       if (promptPreview && !playback.isPlaying) {
         if (promptFolder == 0) mp3.playFolderTrack(promptResult, 1);
