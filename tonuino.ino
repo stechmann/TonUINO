@@ -314,9 +314,6 @@ const uint16_t buttonShortLongPressDelay = 2000;    // time after which a button
 const uint16_t buttonLongLongPressDelay = 5000;     // longer long press delay for special cases, i.e. to trigger the parents menu (in milliseconds)
 const uint32_t debugConsoleSpeed = 9600;            // speed for the debug console
 
-// number of mp3 files in advert folder + number of mp3 files in mp3 folder
-const uint16_t msgCount = 576;
-
 // define magic cookie (by default 0x13 0x37 0xb3 0x47)
 const uint8_t magicCookieHex[4] = {0x13, 0x37, 0xb3, 0x47};
 
@@ -473,6 +470,22 @@ class Mp3Notify {
             Serial.print(F("advertise"));
             break;
           }
+        case DfMp3_Error_RxTimeout: {
+            Serial.print(F("rx timeout"));
+            break;
+          }
+        case DfMp3_Error_PacketSize: {
+            Serial.print(F("packet size"));
+            break;
+          }
+        case DfMp3_Error_PacketHeader: {
+            Serial.print(F("packet header"));
+            break;
+          }
+        case DfMp3_Error_PacketChecksum: {
+            Serial.print(F("packet checksum"));
+            break;
+          }
         case DfMp3_Error_General: {
             Serial.print(F("general"));
             break;
@@ -484,26 +497,23 @@ class Mp3Notify {
       }
       Serial.println(F(" error"));
     }
-    static void OnPlayFinished(uint16_t returnValue) {
+    static void PrintlnSourceAction(DfMp3_PlaySources source, const char* action) {
+      if (source & DfMp3_PlaySources_Sd) Serial.print("sd ");
+      if (source & DfMp3_PlaySources_Usb) Serial.print("usb ");
+      if (source & DfMp3_PlaySources_Flash) Serial.print("flash ");
+      Serial.println(action);
+    }
+    static void OnPlayFinished(DfMp3_PlaySources source, uint16_t returnValue) {
       playNextTrack(returnValue, true, false);
     }
-    static void OnCardOnline(uint16_t returnValue) {
-      Serial.println(F("sd online"));
+    static void OnPlaySourceOnline(DfMp3_PlaySources source) {
+      PrintlnSourceAction(source, "online");
     }
-    static void OnCardInserted(uint16_t returnValue) {
-      Serial.println(F("sd in"));
+    static void OnPlaySourceInserted(DfMp3_PlaySources source) {
+      PrintlnSourceAction(source, "in");
     }
-    static void OnCardRemoved(uint16_t returnValue) {
-      Serial.println(F("sd out"));
-    }
-    static void OnUsbOnline(uint16_t returnValue) {
-      Serial.println(F("usb online"));
-    }
-    static void OnUsbInserted(uint16_t returnValue) {
-      Serial.println(F("usb in"));
-    }
-    static void OnUsbRemoved(uint16_t returnValue) {
-      Serial.println(F("usb out"));
+    static void OnPlaySourceRemoved(DfMp3_PlaySources source) {
+      PrintlnSourceAction(source, "out");
     }
 };
 
@@ -588,8 +598,8 @@ void setup() {
   Serial.print(F("      eq "));
   Serial.println(mp3EqualizerName[preference.mp3Equalizer]);
   mp3.setEq((DfMp3_Eq)(preference.mp3Equalizer - 1));
-  Serial.print(F("  tracks "));
-  Serial.println(mp3.getTotalTrackCount() - msgCount);
+  Serial.print(F("   files "));
+  Serial.println(mp3.getTotalTrackCount(DfMp3_PlaySource_Sd));
   pinMode(mp3BusyPin, INPUT);
 
   Serial.print(F("init"));
