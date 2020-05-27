@@ -24,7 +24,7 @@ sayVoiceByLang = {
 }
 googleVoiceByLang = {
     'de': { 'languageCode': 'de-DE', 'name': 'de-DE-Wavenet-C' },
-    'en': { 'languageCode': 'en-US', 'name': 'en-US-Wavenet-D' },
+    'en': { 'languageCode': 'en-US', 'name': 'en-US-Wavenet-C' },
     'fr': { 'languageCode': 'fr-FR', 'name': 'fr-FR-Wavenet-C' },
     'nl': { 'languageCode': 'nl-NL', 'name': 'nl-NL-Wavenet-A' },
 }
