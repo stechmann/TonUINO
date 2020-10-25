@@ -411,6 +411,11 @@ uint32_t preferenceCookie = 0;
 playbackStruct playback;
 preferenceStruct preference;
 
+bool rfid_tag_present_prev = false;
+bool rfid_tag_present = false;
+int rfid_error_counter = 0;
+
+MFRC522::Uid last_uid;
 // ################################################################################################################################################################
 // ############################################################### no configuration below this line ###############################################################
 // ################################################################################################################################################################
@@ -723,9 +728,37 @@ void loop() {
 #endif
 #endif
 
+  rfid_tag_present_prev = rfid_tag_present;
+
+  rfid_error_counter += 1;
+  if(rfid_error_counter > 2){
+    rfid_tag_present = false;
+  }
+
+  if(mfrc522.PICC_IsNewCardPresent()){
+    if ( ! mfrc522.PICC_ReadCardSerial()) { //Since a PICC placed get Serial and continue
+      return;
+    }
+    rfid_error_counter = 0;
+    rfid_tag_present = true;
+  }
+
   // ################################################################################
   // # main code block, if nfc tag is detected and TonUINO is not locked do something
-  if (mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial() && !playback.isLocked) {
+  if (rfid_tag_present && !rfid_tag_present_prev && !playback.isLocked) {
+    if ((memcmp(&last_uid, &mfrc522.uid, sizeof(last_uid)) == 0) && (playback.playListMode)) {
+        Serial.println("Same Tag found");
+            switchButtonConfiguration(PLAY);
+            shutdownTimer(STOP);
+            Serial.println(F("play"));
+            mp3.start();
+    }
+    else
+    {
+        Serial.println("Other Tag found");
+        memcpy(&last_uid, &mfrc522.uid, sizeof(last_uid));
+
+
     // if the current playback mode is story book mode, only while playing: store the current progress
     if (playback.currentTag.mode == STORYBOOK && playback.isPlaying) {
       Serial.print(F("save "));
@@ -905,6 +938,9 @@ void loop() {
         }
         mfrc522.PICC_HaltA();
         mfrc522.PCD_StopCrypto1();
+        mfrc522.PCD_Reset();
+        delay(100);
+        mfrc522.PCD_Init(); // Init MFRC522
 
         // restore playback volume, can't be higher than maximum volume
         mp3.setVolume(playback.mp3CurrentVolume = min(playback.mp3CurrentVolume, preference.mp3MaxVolume));
@@ -916,8 +952,26 @@ void loop() {
       // # end - nfc tag does not have our magic cookie on it
       // ####################################################
     }
+    }
     // # end - nfc tag is successfully read
     // ####################################
+  }
+
+    // falling edge
+  if (!rfid_tag_present && rfid_tag_present_prev){
+    Serial.println("Tag gone");
+    if (playback.isPlaying) {
+      switchButtonConfiguration(PAUSE);
+      shutdownTimer(START);
+      Serial.println(F("pause"));
+      mp3.pause();
+      // if the current playback mode is story book mode: store the current progress
+      if (playback.currentTag.mode == STORYBOOK) {
+        Serial.print(F("save "));
+        printModeFolderTrack(true);
+        EEPROM.update(playback.currentTag.folder, playback.playList[playback.playListItem - 1]);
+      }
+    }
   }
   // # end - main code block
   // #######################
@@ -1465,6 +1519,9 @@ uint8_t readNfcTagData() {
   else {
     mfrc522.PICC_HaltA();
     mfrc522.PCD_StopCrypto1();
+    mfrc522.PCD_Reset();
+    delay(100);
+    mfrc522.PCD_Init(); // Init MFRC522
     return 0;
   }
 
@@ -1494,6 +1551,9 @@ uint8_t readNfcTagData() {
       playback.currentTag.multiPurposeData2 = nfcTagReadBuffer[8];
       mfrc522.PICC_HaltA();
       mfrc522.PCD_StopCrypto1();
+      mfrc522.PCD_Reset();
+      delay(100);
+      mfrc522.PCD_Init(); // Init MFRC522
     }
     // if magic cookie is blank, clear ncfTag object
     else {
@@ -1511,6 +1571,9 @@ uint8_t readNfcTagData() {
     Serial.println(nfcStatusMessage[4]);
     mfrc522.PICC_HaltA();
     mfrc522.PCD_StopCrypto1();
+    mfrc522.PCD_Reset();
+    delay(100);
+    mfrc522.PCD_Init(); // Init MFRC522
     return 0;
   }
 }
@@ -1567,6 +1630,9 @@ uint8_t writeNfcTagData(uint8_t nfcTagWriteBuffer[], uint8_t nfcTagWriteBufferSi
   else {
     mfrc522.PICC_HaltA();
     mfrc522.PCD_StopCrypto1();
+    mfrc522.PCD_Reset();
+    delay(100);
+    mfrc522.PCD_Init(); // Init MFRC522
     return 0;
   }
 
@@ -1580,6 +1646,9 @@ uint8_t writeNfcTagData(uint8_t nfcTagWriteBuffer[], uint8_t nfcTagWriteBufferSi
     printNfcTagData(nfcTagWriteBuffer, nfcTagWriteBufferSize, true);
     mfrc522.PICC_HaltA();
     mfrc522.PCD_StopCrypto1();
+    mfrc522.PCD_Reset();
+    delay(100);
+    mfrc522.PCD_Init(); // Init MFRC522
     return 1;
   }
   // write was not successfull
@@ -1587,6 +1656,9 @@ uint8_t writeNfcTagData(uint8_t nfcTagWriteBuffer[], uint8_t nfcTagWriteBufferSi
     Serial.println(nfcStatusMessage[4]);
     mfrc522.PICC_HaltA();
     mfrc522.PCD_StopCrypto1();
+    mfrc522.PCD_Reset();
+    delay(100);
+    mfrc522.PCD_Init(); // Init MFRC522
     return 0;
   }
 }
