@@ -217,7 +217,7 @@
 */
 
 // uncomment the below line to enable five button support
-// #define FIVEBUTTONS
+#define FIVEBUTTONS
 
 // uncomment the below line to enable ir remote support
 // #define IRREMOTE
@@ -228,7 +228,7 @@
 // uncomment ONE OF THE BELOW TWO LINES to enable status led support
 // the first enables support for a vanilla led
 // the second enables support for ws281x led(s)
-// #define STATUSLED
+#define STATUSLED
 // #define STATUSLEDRGB
 
 // uncomment the below line to enable low voltage shutdown support
@@ -273,6 +273,7 @@ enum {NOP,
       B0P, B1P, B2P, B3P, B4P,
       B0H, B1H, B2H, B3H, B4H,
       B0D, B1D, B2D, B3D, B4D,
+      B0R, B1R, B2R, B3R, B4R,
       IRU, IRD, IRL, IRR, IRC, IRM, IRP
      };
 
@@ -286,7 +287,7 @@ enum {START, STOP, RESET_INACTIVITY, CHECK, SHUTDOWN};
 enum {READ, WRITE, MIGRATE, RESET, RESET_PROGRESS};
 
 // status led actions
-enum {OFF, SOLID, PULSE, BLINK, BURST2, BURST4, BURST8};
+enum {OFF, SOLID, PULSE, BLINK, BURST1, BURST2, BURST4, BURST8};
 
 // define general configuration constants
 const uint8_t mp3SerialRxPin = 2;                   // mp3 serial rx, wired to tx pin of DFPlayer Mini
@@ -313,6 +314,8 @@ const uint8_t button4Pin = A4;                      // optional 5th button
 const uint16_t buttonClickDelay = 1000;             // time during which a button press is still a click (in milliseconds)
 const uint16_t buttonShortLongPressDelay = 2000;    // time after which a button press is considered a long press (in milliseconds)
 const uint16_t buttonLongLongPressDelay = 5000;     // longer long press delay for special cases, i.e. to trigger the parents menu (in milliseconds)
+const uint16_t buttonRepeatPressDelay = 500;        // automatically repeat a buttonPress is button is hold down for ... milliseconds
+const uint16_t buttonRepeatPressInterval = 250;     // automatically repeat a buttonPress every ... milliseconds
 const uint32_t debugConsoleSpeed = 9600;            // speed for the debug console
 
 // define magic cookie (by default 0x13 0x37 0xb3 0x47)
@@ -994,7 +997,7 @@ void loop() {
     }
   }
   // button 0 (middle) press or ir remote play/pause: toggle playback
-  else if ((inputEvent == B0P && !playback.isLocked) || inputEvent == IRP) {
+  else if (inputEvent == IRP) {
     if (playback.isPlaying) {
       switchButtonConfiguration(PAUSE);
       shutdownTimer(START);
@@ -1016,37 +1019,49 @@ void loop() {
       }
     }
   }
-  // button 1 (right) press or ir remote up while playing: increase volume
-  else if (((inputEvent == B1P && !playback.isLocked) || inputEvent == IRU) && playback.isPlaying) {
+  // button 1 (right) press or hold or ir remote up while playing: increase volume
+  else if ((((inputEvent == B1P || inputEvent == B1R) && !playback.isLocked) || inputEvent == IRU) && playback.isPlaying) {
     if (playback.mp3CurrentVolume < preference.mp3MaxVolume) {
       mp3.setVolume(++playback.mp3CurrentVolume);
       Serial.print(F("volume "));
       Serial.println(playback.mp3CurrentVolume);
-    }
 #if defined STATUSLED
+      statusLedUpdate(BURST1, 255, 0, 0, 0);
+    }
     else statusLedUpdate(BURST2, 255, 0, 0, 0);
+#else
+    }
 #endif
   }
-  // button 2 (left) press or ir remote down while playing: decrease volume
-  else if (((inputEvent == B2P && !playback.isLocked) || inputEvent == IRD) && playback.isPlaying) {
+  // button 2 (left) press or hold or ir remote down while playing: decrease volume
+  else if ((((inputEvent == B2P || inputEvent == B2R) && !playback.isLocked) || inputEvent == IRD) && playback.isPlaying) {
     if (playback.mp3CurrentVolume > 1) {
       mp3.setVolume(--playback.mp3CurrentVolume);
       Serial.print(F("volume "));
       Serial.println(playback.mp3CurrentVolume);
-    }
 #if defined STATUSLED
+      statusLedUpdate(BURST1, 255, 0, 0, 0);
+    }
     else statusLedUpdate(BURST2, 255, 0, 0, 0);
+#else
+    }
 #endif
   }
   // button 1 (right) hold for 2 sec or button 5 press or ir remote right, only during (v)album, (v)party and story book mode while playing: next track
   else if ((((inputEvent == B1H || inputEvent == B4P) && !playback.isLocked) || inputEvent == IRR) && (playback.currentTag.mode == ALBUM || playback.currentTag.mode == PARTY || playback.currentTag.mode == STORYBOOK || playback.currentTag.mode == VALBUM || playback.currentTag.mode == VPARTY) && playback.isPlaying) {
     Serial.println(F("next"));
     playNextTrack(0, true, true);
+#if defined STATUSLED
+      statusLedUpdate(BURST1, 255, 0, 0, 0);
+#endif
   }
   // button 2 (left) hold for 2 sec or button 4 press or ir remote left, only during (v)album, (v)party and story book mode while playing: previous track
   else if ((((inputEvent == B2H || inputEvent == B3P) && !playback.isLocked) || inputEvent == IRL) && (playback.currentTag.mode == ALBUM || playback.currentTag.mode == PARTY || playback.currentTag.mode == STORYBOOK || playback.currentTag.mode == VALBUM || playback.currentTag.mode == VPARTY) && playback.isPlaying) {
     Serial.println(F("prev"));
     playNextTrack(0, false, true);
+#if defined STATUSLED
+      statusLedUpdate(BURST1, 255, 0, 0, 0);
+#endif
   }
   // button 0 (middle) hold for 5 sec or ir remote menu, only during (v)story, (v)album, (v)party and single mode while playing: toggle single track repeat
   else if (((inputEvent == B0H && !playback.isLocked) || inputEvent == IRM) && (playback.currentTag.mode == STORY || playback.currentTag.mode == ALBUM || playback.currentTag.mode == PARTY || playback.currentTag.mode == SINGLE || playback.currentTag.mode == VSTORY || playback.currentTag.mode == VALBUM || playback.currentTag.mode == VPARTY) && playback.isPlaying) {
@@ -1173,6 +1188,9 @@ void translateButtonInput(AceButton *button, uint8_t eventType, uint8_t /* butto
               inputEvent = B1H;
               break;
             }
+          case AceButton::kEventRepeatPressed: {
+              inputEvent = B1R;
+          }
           default: {
               break;
             }
@@ -1190,6 +1208,9 @@ void translateButtonInput(AceButton *button, uint8_t eventType, uint8_t /* butto
               inputEvent = B2H;
               break;
             }
+          case AceButton::kEventRepeatPressed: {
+              inputEvent = B2R;
+          }
           default: {
               break;
             }
@@ -1247,6 +1268,10 @@ void switchButtonConfiguration(uint8_t buttonMode) {
         button1Config.setFeature(ButtonConfig::kFeatureClick);
         button1Config.setFeature(ButtonConfig::kFeatureSuppressAfterClick);
         button1Config.setClickDelay(buttonClickDelay);
+        button1Config.setFeature(ButtonConfig::kFeatureRepeatPress);
+        button1Config.setFeature(ButtonConfig::kFeatureSuppressAfterRepeatPress);
+        button1Config.setRepeatPressDelay(buttonRepeatPressDelay);
+        button1Config.setRepeatPressInterval(buttonRepeatPressInterval);
 #if not defined FIVEBUTTONS
         // only enable long press on button 1 (right) when in 3 button mode
         button1Config.setFeature(ButtonConfig::kFeatureLongPress);
@@ -1258,6 +1283,10 @@ void switchButtonConfiguration(uint8_t buttonMode) {
         button2Config.setFeature(ButtonConfig::kFeatureClick);
         button2Config.setFeature(ButtonConfig::kFeatureSuppressAfterClick);
         button2Config.setClickDelay(buttonClickDelay);
+        button2Config.setFeature(ButtonConfig::kFeatureRepeatPress);
+        button2Config.setFeature(ButtonConfig::kFeatureSuppressAfterRepeatPress);
+        button2Config.setRepeatPressDelay(buttonRepeatPressDelay);
+        button2Config.setRepeatPressInterval(buttonRepeatPressInterval);
 #if not defined FIVEBUTTONS
         // only enable long press on button 2 (left) when in 3 button mode
         button2Config.setFeature(ButtonConfig::kFeatureLongPress);
@@ -2247,6 +2276,15 @@ void statusLedUpdate(uint8_t statusLedAction, uint8_t red, uint8_t green, uint8_
           statusLedState = !statusLedState;
           if (statusLedState) statusLedUpdateHal(red, green, blue, 255);
           else statusLedUpdateHal(0, 0, 0, 0);
+          break;
+        }
+      case BURST1: {
+          for (uint8_t i = 0; i < 2; i++) {
+            statusLedState = !statusLedState;
+            if (statusLedState) statusLedUpdateHal(red, green, blue, 255);
+            else statusLedUpdateHal(0, 0, 0, 0);
+            delay(100);
+          }
           break;
         }
       case BURST2: {
