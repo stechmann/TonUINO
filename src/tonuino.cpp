@@ -239,6 +239,7 @@
 
 // include required libraries
 #include <avr/sleep.h>
+#include <avr/wdt.h>
 #include <SoftwareSerial.h>
 #include <SPI.h>
 #include <EEPROM.h>
@@ -279,7 +280,7 @@ enum {NOP,
 enum {INIT, PLAY, PAUSE, PIN, CONFIG};
 
 // shutdown timer actions
-enum {START, STOP, CHECK, SHUTDOWN};
+enum {START, STOP, RESET_INACTIVITY, CHECK, SHUTDOWN};
 
 // preference actions
 enum {READ, WRITE, MIGRATE, RESET, RESET_PROGRESS};
@@ -686,10 +687,12 @@ void setup() {
 
   switchButtonConfiguration(PAUSE);
   mp3.playMp3FolderTrack(800);
+  wdt_enable(WDTO_4S);
   Serial.println(F("ready"));
 }
 
 void loop() {
+  wdt_reset();
   playback.isPlaying = !digitalRead(mp3BusyPin);
   checkForInput();
   shutdownTimer(CHECK);
@@ -834,6 +837,7 @@ void loop() {
         shutdownTimer(STOP);
 
         while (true) {
+          wdt_reset();
           Serial.println(F("setup tag"));
           Serial.println(F("folder"));
           newTag.folder = prompt(99, 801, 0, 0, 0, true, false);
@@ -1264,6 +1268,7 @@ void waitPlaybackToFinish(uint8_t red, uint8_t green, uint8_t blue, uint16_t sta
 
   delay(500);
   while (digitalRead(mp3BusyPin)) {
+    wdt_reset();
     if (millis() - waitPlaybackToStartMillis >= 10000) break;
 #if defined STATUSLED ^ defined STATUSLEDRGB
     statusLedUpdate(BLINK, red, green, blue, statusLedUpdateInterval);
@@ -1273,6 +1278,7 @@ void waitPlaybackToFinish(uint8_t red, uint8_t green, uint8_t blue, uint16_t sta
 #if defined STATUSLED ^ defined STATUSLEDRGB
     statusLedUpdate(BLINK, red, green, blue, statusLedUpdateInterval);
 #endif
+    wdt_reset();
     mp3.loop();
   }
 }
@@ -1618,20 +1624,30 @@ void printNfcTagType(MFRC522::PICC_Type nfcTagType) {
 // starts, stops and checks the shutdown timer
 void shutdownTimer(uint8_t timerAction) {
   static uint64_t shutdownMillis = 0;
+  static uint64_t inactivityMillis = millis() + 60000;
 
   switch (timerAction) {
     case START: {
         if (preference.shutdownMinutes != 0) shutdownMillis = millis() + (preference.shutdownMinutes * 60000);
         else shutdownMillis = 0;
+        inactivityMillis = millis() + 60000;
         break;
       }
     case STOP: {
+        inactivityMillis = 0;
         shutdownMillis = 0;
         break;
       }
+    case RESET_INACTIVITY: {
+        inactivityMillis = millis() + 60000;
+        break;
+    }
     case CHECK: {
         if (shutdownMillis != 0 && millis() > shutdownMillis) {
           shutdownTimer(SHUTDOWN);
+        }
+        if (digitalRead(mp3BusyPin) && inactivityMillis != 0 && millis() > inactivityMillis) {
+            shutdownTimer(SHUTDOWN);
         }
         break;
       }
@@ -1729,8 +1745,13 @@ uint8_t prompt(uint8_t promptOptions, uint16_t promptHeading, uint16_t promptOff
 
   mp3.playMp3FolderTrack(promptHeading);
   while (true) {
+    wdt_reset();
     playback.isPlaying = !digitalRead(mp3BusyPin);
     checkForInput();
+    if (inputEvent != NOP) {
+        shutdownTimer(RESET_INACTIVITY);
+    }
+
     // serial console input
     if (Serial.available() > 0) {
       uint32_t promptResultSerial = Serial.parseInt();
@@ -1826,6 +1847,7 @@ void parentsMenu() {
   shutdownTimer(STOP);
 
   while (true) {
+    wdt_reset();
     Serial.println(F("parents"));
     uint8_t selectedOption = prompt(10, 900, 909, 0, 0, false, false);
     // cancel
@@ -2055,6 +2077,7 @@ bool enterPinCode() {
   Serial.println(F("pin?"));
   mp3.playMp3FolderTrack(810);
   while (true) {
+    wdt_reset();
     checkForInput();
     // map ir inputs to corresponding button inputs
     if (inputEvent >= 16) inputEvent = pinCodeIrToButtonMapping[inputEvent - 16];
@@ -2209,3 +2232,7 @@ void statusLedUpdateHal(uint8_t red, uint8_t green, uint8_t blue, int16_t bright
 #endif
 }
 #endif
+
+ISR(WDT_vect){
+  digitalWrite(shutdownPin, LOW);
+}
